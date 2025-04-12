@@ -107,6 +107,9 @@ args2.do_rotation = True
 
 folder_path = args2.path
 files = glob.glob(folder_path + "/*")
+
+if not os.path.exists(f"results_qwen_72B/"):
+    os.makedirs(f"results_qwen_72B/")
    
 
 for ii in range (5, len(files)):
