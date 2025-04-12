@@ -3,3 +3,9 @@
 Protection in Images Captured by Blind and Low Vision Users </h2>
 
 Jeffri Murrugarra-Llerena, Haoran Niu, K. Suzanne Barber, Hal Daumé III, Yang Trista Cao, Paola Cascante-Bonilla
+
+</div>
+
+[[`Paper`]()] [[`Project`](https://github.com/Artcs1/VLM-Privacy)] [[`BibTeX`](#citation)]
+
+
