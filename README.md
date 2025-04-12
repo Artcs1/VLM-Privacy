@@ -14,6 +14,13 @@ Jeffri Murrugarra-Llerena<sup>1</sup>, Haoran Niu<sup>2</sup>, K. Suzanne Barber
 
 ## Install
 
+1. Create a conda enviorenment
+
+```
+conda create --name py37-keypoints python=3.7
+conda activate py37-keypoints
+```
+
 ## Citation
 
 If you use this model in your research, please consider citing:
