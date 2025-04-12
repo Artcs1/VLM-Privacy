@@ -3,7 +3,7 @@
 Protection in Images Captured by Blind and Low Vision Users </h2>
 
 Jeffri Murrugarra-Llerena, Haoran Niu, K. Suzanne Barber, Hal Daumé III, Yang Trista Cao, Paola Cascante-Bonilla
-State University of New York at Stony Brook, University of Texas at Austin, University of Maryland, College Park
+<sup>1</sup> State University of New York at Stony Brook, <sup>2</sup>  University of Texas at Austin, <sup>3</sup> University of Maryland, College Park
 
 </div>
 
