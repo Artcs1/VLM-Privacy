@@ -10,8 +10,9 @@ Jeffri Murrugarra-Llerena<sup>1</sup>, Haoran Niu<sup>2</sup>, K. Suzanne Barber
 
 [[`Paper`]()] [[`Project`](https://github.com/Artcs1/VLM-Privacy)] [[`BibTeX`](#citation)]
 
+## About
 
-
+## Install
 
 ## Citation
 
