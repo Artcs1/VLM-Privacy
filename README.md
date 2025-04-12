@@ -11,3 +11,11 @@ Jeffri Murrugarra-Llerena<sup>1</sup>, Haoran Niu<sup>2</sup>, K. Suzanne Barber
 [[`Paper`]()] [[`Project`](https://github.com/Artcs1/VLM-Privacy)] [[`BibTeX`](#citation)]
 
 
+
+
+## Citation
+
+If you use this model in your research, please consider citing:
+
+```
+```
