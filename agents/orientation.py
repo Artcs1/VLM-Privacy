@@ -11,10 +11,10 @@ os.environ["HF_DATASETS_CACHE"]="/gpfs/projects/CascanteBonillaGroup/jmurrugarra
 os.environ["TRANSFORMERS_CACHE"]="/gpfs/projects/CascanteBonillaGroup/jmurrugarral/anaconda3/.cache/models"
 
 
-__dir__ = "/gpfs/projects/CascanteBonillaGroup/paola/PaddleOCR"
-sys.path.append(__dir__)
-sys.path.insert(0, os.path.abspath(os.path.join(__dir__, "../..")))
-sys.path.append("/gpfs/projects/CascanteBonillaGroup/paola/EVF-SAM/")
+#__dir__ = "/gpfs/projects/CascanteBonillaGroup/paola/PaddleOCR"
+#sys.path.append(__dir__)
+#sys.path.insert(0, os.path.abspath(os.path.join(__dir__, "../..")))
+#sys.path.append("/gpfs/projects/CascanteBonillaGroup/paola/EVF-SAM/")
 
 from transformers import AutoProcessor
 from vllm import LLM, SamplingParams
