@@ -14,6 +14,8 @@ Jeffri Murrugarra-Llerena<sup>1</sup>, Haoran Niu<sup>2</sup>, K. Suzanne Barber
 
 ![VLM](images/overview.jpg)
 
+VLM - Privacy can detect both coarse and fine-grained information. Also, based on some external information it can select which detection are more critical than others.
+
 ## Install
 
 1. Create a conda enviorenment
