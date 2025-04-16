@@ -12,6 +12,8 @@ Jeffri Murrugarra-Llerena<sup>1</sup>, Haoran Niu<sup>2</sup>, K. Suzanne Barber
 
 ## About
 
+![VLM](images/concept_gaucho.png)
+
 ## Install
 
 1. Create a conda enviorenment
