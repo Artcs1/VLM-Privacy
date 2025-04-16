@@ -12,7 +12,7 @@ Jeffri Murrugarra-Llerena<sup>1</sup>, Haoran Niu<sup>2</sup>, K. Suzanne Barber
 
 ## About
 
-![VLM](images/overview.png)
+![VLM](images/overview.jpg)
 
 ## Install
 
