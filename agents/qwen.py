@@ -83,7 +83,7 @@ class QWEN_VLM:
         
         self.unique_categories = unique_categories
 
-        with open(f'/gpfs/projects/CascanteBonillaGroup/paola/Qwen2.5-VL/label2item_list.json', 'r') as file:
+        with open(f'categories/label2item_list.json', 'r') as file:
             self.unique_categories_per_metacategory = json.load(file)
 
 
@@ -452,7 +452,7 @@ class QWEN_VLM:
         ]
         
         # processor = AutoProcessor.from_pretrained(MODEL_PATH)
-        prompt = processor.apply_chat_template(
+        prompt = self.processor.apply_chat_template(
             messages,
             tokenize=False,
             add_generation_prompt=True,
@@ -470,7 +470,7 @@ class QWEN_VLM:
             "multi_modal_data": mm_data,
         }
 
-        outputs = llm.generate([llm_inputs], sampling_params=self.sampling_params)
+        outputs = self.llm.generate([llm_inputs], sampling_params=self.sampling_params)
         generated_text = outputs[0].outputs[0].text
         return generated_text
     
@@ -501,7 +501,7 @@ class QWEN_VLM:
         ]
         
         # processor = AutoProcessor.from_pretrained(MODEL_PATH)
-        prompt = processor.apply_chat_template(
+        prompt = self.processor.apply_chat_template(
             messages,
             tokenize=False,
             add_generation_prompt=True,
@@ -519,6 +519,6 @@ class QWEN_VLM:
             "multi_modal_data": mm_data,
         }
 
-        outputs = llm.generate([llm_inputs], sampling_params=self.sampling_params)
+        outputs = self.llm.generate([llm_inputs], sampling_params=self.sampling_params)
         generated_text = outputs[0].outputs[0].text
         return generated_text

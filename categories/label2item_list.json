@@ -1,0 +1,230 @@
+{
+    "bank statement": {
+        "synonym":[
+            "bank account statement",
+            "bank account information"
+        ],
+        "contained_info":[
+            "bank account number",
+            "bank account balance",
+            "bank account transfer amount",
+            "address",
+            "email address",
+            "date of birth",
+            "name",
+            "social security number",
+            "personal identification number",
+            "username",
+            "routing number",
+            "employment history",
+            "tax refund",
+            "medicaid reimbursement",
+            "medicare reimbursement",
+            "medical information"
+        ]
+    },
+    "letter with address": {
+        "synonym": [
+            "mail"
+        ],
+        "contained_info":[
+            "address",
+            "name",
+            "signature",
+            "phone number"
+        ]
+    },
+    "credit or debit card":{
+        "synonym":[
+            "credit card",
+            "debit card",
+            "bank card",
+            "credit card information",
+            "debit card information"
+        ],
+        "contained_info":[
+            "bank card expiration date",
+            "credit card number",
+            "cvv code",
+            "name",
+            "signature",
+            "debit card number"
+
+        ]
+    },
+    "bills or receipt":{
+        "synonym":[
+            "billing statement", 
+            "billing information",
+            "invoice and/or receipt",
+            "finance invoice and receipt"
+        ],
+        "contained_info":[
+            "bill paid",
+            "customer account information",
+            "customer account",
+            "credit card number",
+            "signature",
+            "name",
+            "email address",
+            "address",
+            "date of birth",
+            "personal identification number",
+            "medical information"
+        ]
+    },
+    "preganancy test":{
+        "synonym":[
+            "diagnosis",
+            "medical record"
+        ],
+        "contained_info":[]
+    },
+    "pregnancy test box":{
+        "synonym":[],
+        "contained_info":[]
+    },
+    "mortage or investment report":{
+        "synonym":[
+            "loan statement",
+            "loan application",
+            "loan information",
+            "mortgage document",
+            "financial statement",
+            "financial information"
+        ],
+        "contained_info":[
+            "bank account number",
+            "account number",
+            "fund bank account",
+            "fund withdrawn from bank account",
+            "monetary amount",
+            "social security number",
+            "date of birth",
+            "email address",
+            "name",
+            "address"
+        ]
+    },
+    "doctor prescription":{
+        "synonym":[
+            "prescription",
+            "medical prescription",
+            "medical information", 
+            "medical record"
+        ],
+        "contained_info":[
+            "date of birth",
+            "email address",
+            "name",
+            "address",
+            "diagnosis",
+            "treatment information",
+            "prescription drug",
+            "medical record number",
+            "health plan member number",
+            "insurance policy information"
+        ]
+    },
+    "empty pill bottle":{
+        "synonym":[
+            "medical information", 
+            "medical record"
+        ],
+        "contained_info":[
+            "date of birth",
+            "email address",
+            "name",
+            "address",
+            "diagnosis",
+            "treatment information",
+            "prescription drug",
+            "medical record number",
+            "health plan member number",
+            "insurance policy information"
+        ]
+    },
+    "condom with plastic bag":{
+        "synonym":[],
+        "contained_info":[]
+    },
+    "tattoo sleeve":{
+        "synonym":[
+            "biometric data"
+        ],
+        "contained_info":[
+            "biometric data"
+        ]
+    },
+    "transcript":{
+        "synonym":[
+            "student transcript"
+        ],
+        "contained_info":[
+            "education level",
+            "date of birth",
+            "email address",
+            "name",
+            "address"
+        ]
+    },
+    "business card":{
+        "synonym":[
+            "employment"
+        ],
+        "contained_info":[
+            "employment history",
+            "employment information",
+            "email address",
+            "name",
+            "address"
+        ]
+    },
+    "condom box":{
+        "synonym":[ ],
+        "contained_info":[]
+    },
+    "local newspaper":{
+        "synonym":[],
+        "contained_info":[
+            "address"
+        ]
+    },
+    "medical record document":{
+        "synonym":[
+            "prescription",
+            "medical prescription",
+            "medical information", 
+            "medical record"
+        ],
+        "contained_info":[
+            "date of birth",
+            "email address",
+            "name",
+            "address",
+            "diagnosis",
+            "treatment information",
+            "prescription drug",
+            "medical record number",
+            "health plan member number",
+            "insurance policy information"
+        ]
+    },
+    "id card":{
+        "synonym":[],
+        "contained_info":[
+            "date of birth",
+            "gender",
+            "email address",
+            "name",
+            "address",
+            "driver license number", 
+            "driver license", 
+            "health insurance card",
+            "health insurance policy number",
+            "social security card",
+            "social security number",
+            "voter identification card"
+        ]
+    }
+}

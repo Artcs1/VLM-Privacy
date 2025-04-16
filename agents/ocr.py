@@ -170,11 +170,11 @@ def pladdleOCR():
     args.e2e_algorithm="PGNet"
     # args.image_dir='/content/cropped_image.png'
     args.image_dir="rotated_image.jpg"
-    args.e2e_model_dir="/gpfs/projects/CascanteBonillaGroup/paola/PaddleOCR/e2e_server_pgnetA_infer"
+    args.e2e_model_dir="e2e_server_pgnetA_infer"
     args.use_gpu=False
     args.e2e_pgnet_valid_set="totaltext"
-    args.rec_char_dict_path = "/gpfs/projects/CascanteBonillaGroup/paola/PaddleOCR/ppocr/utils/ppocr_keys_v1.txt"
-    args.e2e_char_dict_path = "/gpfs/projects/CascanteBonillaGroup/paola/PaddleOCR/ppocr/utils/ic15_dict.txt"
+    args.rec_char_dict_path = "ppocr/utils/ppocr_keys_v1.txt"
+    args.e2e_char_dict_path = "ppocr/utils/ic15_dict.txt"
 
     image_file_list = get_image_file_list(args.image_dir)
     text_detector = OCR_AGENT(args)
