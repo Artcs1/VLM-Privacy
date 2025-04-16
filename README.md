@@ -34,6 +34,14 @@ python -m pip install paddlepaddle==3.0.0rc1 -i https://www.paddlepaddle.org.cn/
 pip install -r requirements.txt
 ```
 
+## Demo
+
+We show how to use our agents and their interactions in demo.ipynb
+
+## Code for validation experiments
+
+Coming soon ...
+
 ## Citation
 
 If you use this model in your research, please consider citing:
