@@ -38,6 +38,12 @@ python -m pip install paddlepaddle==3.0.0rc1 -i https://www.paddlepaddle.org.cn/
 pip install -r requirements.txt
 ```
 
+4. Download external models (PaddleOCR)
+   
+```
+!wget https://paddleocr.bj.bcebos.com/dygraph_v2.0/pgnet/e2e_server_pgnetA_infer.tar && tar xf e2e_server_pgnetA_infer.tar
+```
+
 ## Demo
 
 We show how to use our agents and their interactions in demo.ipynb
