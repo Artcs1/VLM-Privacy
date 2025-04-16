@@ -83,6 +83,9 @@ class QWEN_VLM:
         
         self.unique_categories = unique_categories
 
+        with open(f'/gpfs/projects/CascanteBonillaGroup/paola/Qwen2.5-VL/label2item_list.json', 'r') as file:
+            self.unique_categories_per_metacategory = json.load(file)
+
 
     def flatten_list_remove_na(self, data_list):
         flat_list = []
@@ -102,7 +105,51 @@ class QWEN_VLM:
     
         return cleaned_parts
     
-    def guided_labeling(self, image):
+    def guided_labeling(self, image, strs):
+    
+        messages = [
+            {"role": "system", "content": """You are a helpful assistant. Output json {'text': text, 'category': category}"""},
+            {
+                "role": "user",
+                "content": [
+                    {
+                        "type": "image",
+                        "image": image, # pil_src_im,
+                    },
+                    # {"type": "text", "text": f"Name Entity Recognition this text: {', '.join(strs)}. Output the label for each word in json format. Follow these categories {unique_categories}. Include all words."},
+                    {"type": "text", "text": f"Name Entity Recognition each word in this list: {strs} using these categories: {self.unique_categories}. Use the image as context."},
+                    # {"type": "text", "text": f"Based on the image, label each word in this sentence '{' '.join(strs)}' using these categories: {unique_categories}."},
+                    # {"type": "text", "text": f"The text {'898'} appears in the image? Does it refers to: {' ,'.join(unique_categories)}?"},
+                    # {"type": "text", "text": f"The text {'o1'} appears in the image? Does it refers to: {' ,'.join(unique_categories)}? Therefore, it refers to ..."},
+                    # {"type": "text", "text": f"Does the image content related to one of this categories: {' ,'.join(self.unique_categories)}? Reason and output Therefore, the category is: ... Limit your response to the most probable category"},
+                ],
+            }
+        ]
+        
+        # processor = AutoProcessor.from_pretrained(MODEL_PATH)
+        prompt = self.processor.apply_chat_template(
+            messages,
+            tokenize=False,
+            add_generation_prompt=True,
+        )
+        image_inputs, video_inputs = process_vision_info(messages)
+
+        mm_data = {}
+        if image_inputs is not None:
+            mm_data["image"] = image_inputs
+        if video_inputs is not None:
+            mm_data["video"] = video_inputs
+
+        llm_inputs = {
+            "prompt": prompt,
+            "multi_modal_data": mm_data,
+        }
+
+        outputs = self.llm.generate([llm_inputs], sampling_params=self.sampling_params)
+        generated_text = outputs[0].outputs[0].text
+        return generated_text
+
+    def _guided_labeling(self, image):
     
         messages = [
             # {"role": "system", "content": """You are a helpful assistant."""},
@@ -382,4 +429,96 @@ class QWEN_VLM:
         generated_text = outputs[0].outputs[0].text
     
         return generated_text
+
+    def guided_labeling_per_match(self, image, strs):
     
+        messages = [
+            {"role": "system", "content": """You are a helpful assistant."""},
+            {
+                "role": "user",
+                "content": [
+                    {
+                        "type": "image",
+                        "image": image, # pil_src_im,
+                    },
+                    # {"type": "text", "text": f"Name Entity Recognition this text: {', '.join(strs)}. Output the label for each word in json format. Follow these categories {unique_categories}. Include all words."},
+                    {"type": "text", "text": f"Based on the image, classify this text: '{strs} 'using these categories: {self.unique_categories}. Output only one category."},
+                    # {"type": "text", "text": f"Based on the image, label each word in this sentence '{' '.join(strs)}' using these categories: {unique_categories}."},
+                    # {"type": "text", "text": f"The text {'898'} appears in the image? Does it refers to: {' ,'.join(unique_categories)}?"},
+                    # {"type": "text", "text": f"The text {'o1'} appears in the image? Does it refers to: {' ,'.join(unique_categories)}? Therefore, it refers to ..."},
+                    # {"type": "text", "text": f"Does the image content related to one of this categories: {' ,'.join(self.unique_categories)}? Reason and output Therefore, the category is: ... Limit your response to the most probable category"},
+                ],
+            }
+        ]
+        
+        # processor = AutoProcessor.from_pretrained(MODEL_PATH)
+        prompt = processor.apply_chat_template(
+            messages,
+            tokenize=False,
+            add_generation_prompt=True,
+        )
+        image_inputs, video_inputs = process_vision_info(messages)
+
+        mm_data = {}
+        if image_inputs is not None:
+            mm_data["image"] = image_inputs
+        if video_inputs is not None:
+            mm_data["video"] = video_inputs
+
+        llm_inputs = {
+            "prompt": prompt,
+            "multi_modal_data": mm_data,
+        }
+
+        outputs = llm.generate([llm_inputs], sampling_params=self.sampling_params)
+        generated_text = outputs[0].outputs[0].text
+        return generated_text
+    
+
+    def guided_labeling_per_match_per_metacategory(self, image, strs, metacategory):
+    
+        unique_categories = self.unique_categories_per_metacategory[metacategory]["contained_info"]
+        unique_categories.append("other")
+        unique_categories.append("none")
+
+        messages = [
+            {"role": "system", "content": """You are a helpful assistant."""},
+            {
+                "role": "user",
+                "content": [
+                    {
+                        "type": "image",
+                        "image": image, # pil_src_im,
+                    },
+                    # {"type": "text", "text": f"Name Entity Recognition this text: {', '.join(strs)}. Output the label for each word in json format. Follow these categories {unique_categories}. Include all words."},
+                    {"type": "text", "text": f"Based on the image, classify this text: '{strs} 'using these categories: {unique_categories}. Output only one category."},
+                    # {"type": "text", "text": f"Based on the image, label each word in this sentence '{' '.join(strs)}' using these categories: {unique_categories}."},
+                    # {"type": "text", "text": f"The text {'898'} appears in the image? Does it refers to: {' ,'.join(unique_categories)}?"},
+                    # {"type": "text", "text": f"The text {'o1'} appears in the image? Does it refers to: {' ,'.join(unique_categories)}? Therefore, it refers to ..."},
+                    # {"type": "text", "text": f"Does the image content related to one of this categories: {' ,'.join(self.unique_categories)}? Reason and output Therefore, the category is: ... Limit your response to the most probable category"},
+                ],
+            }
+        ]
+        
+        # processor = AutoProcessor.from_pretrained(MODEL_PATH)
+        prompt = processor.apply_chat_template(
+            messages,
+            tokenize=False,
+            add_generation_prompt=True,
+        )
+        image_inputs, video_inputs = process_vision_info(messages)
+
+        mm_data = {}
+        if image_inputs is not None:
+            mm_data["image"] = image_inputs
+        if video_inputs is not None:
+            mm_data["video"] = video_inputs
+
+        llm_inputs = {
+            "prompt": prompt,
+            "multi_modal_data": mm_data,
+        }
+
+        outputs = llm.generate([llm_inputs], sampling_params=self.sampling_params)
+        generated_text = outputs[0].outputs[0].text
+        return generated_text

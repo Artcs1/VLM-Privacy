@@ -2,7 +2,7 @@ import os
 import sys
 
 os.environ["CUDA_DEVICE_ORDER"]="PCI_BUS_ID"
-os.environ["CUDA_VISIBLE_DEVICES"]="0,1,2"
+os.environ["CUDA_VISIBLE_DEVICES"]="0,1,2,3"
 
 ANACONDA_PATH = "/gpfs/projects/CascanteBonillaGroup/jmurrugarral/anaconda3/"
 
@@ -10,7 +10,6 @@ os.environ["PIP_CACHE_DIR"]= ANACONDA_PATH +".cache"
 os.environ["HF_HOME"]=ANACONDA_PATH + ".cache"
 os.environ["HF_DATASETS_CACHE"]=ANACONDA_PATH + ".cache/datasets"
 os.environ["TRANSFORMERS_CACHE"]=ANACONDA_PATH + ".cache/models"
-
 
 #__dir__ = "/gpfs/projects/CascanteBonillaGroup/paola/PaddleOCR"
 #sys.path.append(__dir__)
@@ -21,6 +20,22 @@ from transformers import AutoProcessor
 from vllm import LLM, SamplingParams
 from qwen_vl_utils import process_vision_info
 import torch
+
+# Initialize the processor
+#processor = AutoProcessor.from_pretrained("Qwen/Qwen2.5-VL-72B-Instruct")
+processor = AutoProcessor.from_pretrained("Qwen/Qwen2.5-VL-72B-Instruct")
+    
+# Initialize the LLM
+# from vllm.config import PoolerConfig
+#llm = LLM(model="Qwen/Qwen2.5-VL-72B-Instruct", tensor_parallel_size=4, dtype=torch.bfloat16) # , task="generate", override_pooler_config=PoolerConfig(pooling_type="ALL"))
+llm = LLM(model="Qwen/Qwen2.5-VL-72B-Instruct", tensor_parallel_size=4, dtype=torch.bfloat16) # , task="generate", override_pooler_config=PoolerConfig(pooling_type="ALL"))
+    
+# llm = LLM(model="Qwen/Qwen2.5-VL-72B-Instruct", torch_dtype=torch.bfloat16,
+#         attn_implementation="flash_attention_2",
+#         device_map="auto",
+#     )
+    
+
 
 import re
 import argparse
@@ -66,20 +81,6 @@ from utils import *
 
 def main():
 
-    # Initialize the processor
-    #processor = AutoProcessor.from_pretrained("Qwen/Qwen2.5-VL-72B-Instruct")
-    processor = AutoProcessor.from_pretrained("Qwen/Qwen2.5-VL-7B-Instruct")
-    
-    # Initialize the LLM
-    # from vllm.config import PoolerConfig
-    #llm = LLM(model="Qwen/Qwen2.5-VL-72B-Instruct", tensor_parallel_size=4, dtype=torch.bfloat16) # , task="generate", override_pooler_config=PoolerConfig(pooling_type="ALL"))
-    llm = LLM(model="Qwen/Qwen2.5-VL-7B-Instruct", tensor_parallel_size=2, dtype=torch.bfloat16) # , task="generate", override_pooler_config=PoolerConfig(pooling_type="ALL"))
-    
-    # llm = LLM(model="Qwen/Qwen2.5-VL-72B-Instruct", torch_dtype=torch.bfloat16,
-    #         attn_implementation="flash_attention_2",
-    #         device_map="auto",
-    #     )
-    
     additional_colors = [colorname for (colorname, colorcode) in ImageColor.colormap.items()]
     
     # default: Load the model on the available device(s)
