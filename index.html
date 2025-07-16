@@ -1,0 +1,490 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta name="description"
+        content="PoseTraj: Pose-Aware Trajectory Control in Video Diffusion">
+  <meta name="keywords" content="Trajectory Control, Video Generation">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>PoseTraj: Pose-Aware Trajectory Control in Video Diffusion</title>
+
+  <!-- Global site tag (gtag.js) - Google Analytics -->
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-PYVRSFMDRL"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+
+    function gtag() {
+      dataLayer.push(arguments);
+    }
+
+    gtag('js', new Date());
+
+    gtag('config', 'G-PYVRSFMDRL');
+  </script>
+
+  <link href="https://fonts.googleapis.com/css?family=Google+Sans|Noto+Sans|Castoro"
+        rel="stylesheet">
+
+  <link rel="stylesheet" href="./static/css/bulma.min.css">
+  <link rel="stylesheet" href="./static/css/bulma-carousel.min.css">
+  <link rel="stylesheet" href="./static/css/bulma-slider.min.css">
+  <link rel="stylesheet" href="./static/css/fontawesome.all.min.css">
+  <link rel="stylesheet"
+        href="https://cdn.jsdelivr.net/gh/jpswalsh/academicons@1/css/academicons.min.css">
+  <link rel="stylesheet" href="./static/css/index.css">
+  <link rel="icon" href="./static/images/favicon.svg">
+
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+  <script defer src="./static/js/fontawesome.all.min.js"></script>
+  <script src="./static/js/bulma-carousel.min.js"></script>
+  <script src="./static/js/bulma-slider.min.js"></script>
+  <script src="./static/js/index.js"></script>
+</head>
+<body>
+
+<!-- <nav class="navbar" role="navigation" aria-label="main navigation">
+  <div class="navbar-brand">
+    <a role="button" class="navbar-burger" aria-label="menu" aria-expanded="false">
+      <span aria-hidden="true"></span>
+      <span aria-hidden="true"></span>
+      <span aria-hidden="true"></span>
+    </a>
+  </div>
+  <div class="navbar-menu">
+    <div class="navbar-start" style="flex-grow: 1; justify-content: center;">
+      <a class="navbar-item" href="https://keunhong.com">
+      <span class="icon">
+          <i class="fas fa-home"></i>
+      </span>
+      </a> -->
+
+<!--       <div class="navbar-item has-dropdown is-hoverable">
+        <a class="navbar-link">
+          More Research
+        </a>
+        <div class="navbar-dropdown">
+          <a class="navbar-item" href="https://hypernerf.github.io">
+            HyperNeRF
+          </a>
+          <a class="navbar-item" href="https://nerfies.github.io">
+            Nerfies
+          </a>
+          <a class="navbar-item" href="https://latentfusion.github.io">
+            LatentFusion
+          </a>
+          <a class="navbar-item" href="https://photoshape.github.io">
+            PhotoShape
+          </a>
+        </div>
+      </div> -->
+<!--     </div>
+
+  </div>
+</nav> -->
+
+
+<section class="hero">
+  <div class="hero-body">
+    <div class="container is-max-desktop">
+      <div class="columns is-centered">
+        <div class="column has-text-centered">
+            <h1 class="title is-1 publication-title">PoseTraj: Pose-Aware Trajectory Control in Video Diffusion</h1>
+            <div class="is-size-5 publication-authors">
+              <span class="author-block">
+                <a href="https://scholar.google.com/citations?user=nXPxnK8AAAAJ&hl=zh-CN&oi=sra">Longbin Ji</a><sup>1</sup>,</span>
+              <span class="author-block">
+                <a href="https://zhongleilz.github.io/">Lei Zhong</a><sup>1</sup>,</span>
+              <span class="author-block">
+                <a href="https://pengfei-wei.com/">Pengfei Wei</a><sup>2</sup>,
+              </span>
+              <span class="author-block">
+                <a href="https://enigma-li.github.io/">Changjian Li</a><sup>1</sup>,
+              </span>
+            </div>
+
+            <div class="is-size-5 publication-authors">
+                <span class="author-block"><sup>1</sup>University of Edinburgh,</span>
+                <span class="author-block"><sup>2</sup>NTU</span>
+            </div>
+            <div class="is-size-5 publication-authors">
+                <span class="author-block">
+                CVPR 2025</span>
+            </div>
+
+          <div class="column has-text-centered">
+            <div class="publication-links">
+              <!-- PDF Link. -->
+              <span class="link-block">
+                <a href="https://arxiv.org/abs/2503.16068"
+                   class="external-link button is-normal is-rounded is-dark">
+                  <span class="icon">
+                      <i class="ai ai-arxiv"></i>
+                  </span>
+                  <span>arXiv</span>
+                </a>
+              </span>
+              <!-- Video Link. -->
+              <!-- <span class="link-block">
+                <a href="https://www.youtube.com/watch?v=MrKrnHhk8IA"
+                   class="external-link button is-normal is-rounded is-dark">
+                  <span class="icon">
+                      <i class="fab fa-youtube"></i>
+                  </span>
+                  <span>Video</span>
+                </a>
+              </span> -->
+              <!-- Code Link. -->
+              <span class="link-block">
+                <a href="https://github.com/robingg1/PoseTraj"
+                   class="external-link button is-normal is-rounded is-dark">
+                  <span class="icon">
+                      <i class="fab fa-github"></i>
+                  </span>
+                  <span>Code</span>
+                  </a>
+              <!-- </span> -->
+              <!-- Dataset Link. -->
+              <span class="link-block">
+                <a href="https://github.com/robingg1/PoseTraj"
+                   class="external-link button is-normal is-rounded is-dark">
+                  <span class="icon">
+                      <i class="far fa-images"></i>
+                  </span>
+                  <span>Data</span>
+                  </a>
+            </div>
+
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="hero teaser">
+    <div class="container is-max-desktop">
+      <div class="hero-body">
+        
+        <!-- 第一排 -->
+        <div class="columns is-centered">
+          <div class="column">
+            <img src="./static/pose_videos/car1.jpg" alt="Image">
+          </div>
+          <div class="column">
+            <img src="./static/pose_videos/car1_traj.jpg" alt="Trajectory">
+          </div>
+          <div class="column">
+            <img src="./static/pose_videos/traj_car1.gif" alt="Animated Video">
+          </div>
+        </div>
+  
+        <!-- 第二排 -->
+        <div class="columns is-centered">
+            <div class="column">
+                <img src="./static/pose_videos/boat1.jpg" alt="Image">
+            </div>
+            <div class="column">
+                <img src="./static/pose_videos/boat1_traj.jpg" alt="Trajectory">
+            </div>
+            <div class="column">
+                <img src="./static/pose_videos/traj_boat1.gif" alt="Animated Video">
+            </div>
+        </div>
+
+        <!-- 第三排 -->
+        <div class="columns is-centered">
+          <div class="column">
+            <img src="./static/pose_videos/motor1.jpg" alt="Image">
+          </div>
+          <div class="column">
+            <img src="./static/pose_videos/motor1_traj.jpg" alt="Trajectory">
+          </div>
+          <div class="column">
+            <img src="./static/pose_videos/traj_motor1.gif" alt="Animated Video">
+          </div>
+      </div>
+  
+        <!-- 第四排 -->
+        <div class="columns is-centered">
+            <div class="column">
+                <img src="./static/pose_videos/two_car.jpg" alt="Image">
+                <h4 class="subtitle has-text-centered">Image</h4>
+            </div>
+            <div class="column">
+                <img src="./static/pose_videos/two_car_traj.jpg" alt="Trajectory">
+                <h4 class="subtitle has-text-centered">Trajectory</h4>
+            </div>
+            <div class="column">
+                <img src="./static/pose_videos/traj_two_car.gif" alt="Animated Video">
+                <h4 class="subtitle has-text-centered">Animated Video</h4>
+            </div>
+        </div>
+  
+        <h2 class="subtitle has-text-centered">
+          <span class="dnerf">PoseTraj</span> generated pose-aware animation videos given rotational trajectories.
+        </h2>
+  
+      </div>
+    </div>
+</section>
+
+
+<section class="hero is-light is-small">
+  <div class="hero-body">
+    <div class="container">
+      <h2 class="title is-3">Comparison with DragAnything</h2>
+      <div class="columns is-multiline is-centered">
+        <!-- 第一排 -->
+        <div class="column">
+          <img src="./static/pose_videos/red_car.jpg" alt="Ground Truth">
+        </div>
+        <div class="column">
+          <img src="./static/pose_videos/red_car_traj.jpg" alt="C2G2">
+        </div>
+        <div class="column">
+          <img src="./static/pose_draganything/traj_red_car.gif" alt="Diffgesture">
+        </div>
+        <div class="column">
+          <img src="./static/pose_videos/traj_red_car.gif" alt="HA2G">
+        </div>
+      </div>
+
+      <!-- 第二排 -->
+      <div class="columns is-multiline is-centered">
+        <div class="column">
+          <img src="./static/pose_videos/car1.jpg" alt="Ground Truth">
+        </div>
+        <div class="column">
+          <img src="./static/pose_videos/car1_traj.jpg" alt="C2G2">
+        </div>
+        <div class="column">
+          <img src="./static/pose_draganything/traj_car1.gif" alt="Diffgesture">
+        </div>
+        <div class="column">
+          <img src="./static/pose_videos/traj_car1.gif" alt="HA2G">
+        </div>
+      </div>
+
+      <!-- 第三排 -->
+      <div class="columns is-multiline is-centered">
+        <div class="column">
+          <img src="./static/pose_videos/plane1.jpg" alt="Ground Truth">
+          <!-- <h4 class="subtitle has-text-centered">Image</h4> -->
+        </div>
+        <div class="column">
+          <img src="./static/pose_videos/plane1_traj.jpg" alt="C2G2">
+          <!-- <h4 class="subtitle has-text-centered">Trajectory</h4> -->
+        </div>
+        <div class="column">
+          <img src="./static/pose_draganything/traj_plane1.gif" alt="Diffgesture">
+          <!-- <h4 class="subtitle has-text-centered">DragAnything</h4> -->
+        </div>
+        <div class="column">
+          <img src="./static/pose_videos/traj_plane1.gif" alt="HA2G">
+          <!-- <h4 class="subtitle has-text-centered">PoseTraj</h4> -->
+        </div>
+      </div>
+
+      <!-- 第四排 -->
+      <div class="columns is-multiline is-centered">
+        <div class="column">
+          <img src="./static/pose_videos/two_dog.jpg" alt="Ground Truth">
+          <h4 class="subtitle has-text-centered">Image</h4>
+        </div>
+        <div class="column">
+          <img src="./static/pose_videos/two_dog_traj.jpg" alt="C2G2">
+          <h4 class="subtitle has-text-centered">Trajectory</h4>
+        </div>
+        <div class="column">
+          <img src="./static/pose_draganything/traj_two_dog.gif" alt="Diffgesture">
+          <h4 class="subtitle has-text-centered">DragAnything</h4>
+        </div>
+        <div class="column">
+          <img src="./static/pose_videos/traj_two_dog.gif" alt="HA2G">
+          <h4 class="subtitle has-text-centered">PoseTraj</h4>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+
+<section class="section">
+  <div class="container is-max-desktop">
+    <!-- Abstract. -->
+    <div class="columns is-centered has-text-centered">
+      <div class="column is-four-fifths">
+        <h2 class="title is-3">Abstract</h2>
+        <div class="content has-text-justified">
+          <p>
+            We introduce PoseTraj, the first open-domain, Pose-Aware video dragging model for reliable 3D-aligned animations from 2D trajectories. Our method incorporates a novel Two-Stage Pose-Aware Pretraining framework, improving 3D understanding across diverse trajectories. 
+          </p>
+          <p>
+            Specifically, we 1. construct a large-scale synthetic dataset containing 10k videos of objects following rotational trajectories and 2. enhance the model perception of object pose changes by generating 3D bounding boxes as intermediate supervision signals. Following this, we fine-tune the trajectory-controlling module on open-domain videos, applying an additional camera disentanglement module to further refine motion accuracy. Experiments on various benchmark scenarios demonstrate that PoseTraj not only excels in 3D Pose-Aligned dragging for rotational scenarios but also outperforms existing baselines in trajectory accuracy and video quality.
+          </p>
+        </div>
+      </div>
+    </div>
+    <!--/ Abstract. -->
+
+    <!-- Paper video. -->
+    <div class="columns is-centered has-text-centered">
+        <div class="column is-four-fifths">
+            <h2 class="title is-3">Model</h2>
+            <div class="publication-image">
+            <img src="./static/images/overview_new.jpg" alt="Description of the image">
+            </div>
+        </div>
+    </div>
+    <!--/ Paper video. -->
+  </div>
+</section>
+
+<section class="hero is-light is-small">
+  <div class="hero-body">
+    <div class="container">
+      <h2 class="title is-3">More visual samples</h2>
+      <!-- 第一排 -->
+      <div class="columns is-multiline is-centered">
+        <div class="column">
+          <img src="./static/pose_videos/room.jpg" alt="Ground Truth">
+        </div>
+        <div class="column">
+          <img src="./static/pose_videos/room_traj.jpg" alt="Ground Truth">
+        </div>
+        <div class="column">
+          <img src="./static/pose_videos/traj_room.gif" alt="C2G2">
+        </div>
+      </div>
+
+      <!-- 第二排 -->
+      <div class="columns is-multiline is-centered">
+        <div class="column">
+          <img src="./static/pose_videos/car3.jpg" alt="Diffgesture">
+        </div>
+        <div class="column">
+          <img src="./static/pose_videos/car3_traj.jpg" alt="Diffgesture">
+        </div>
+        <div class="column">
+          <img src="./static/pose_videos/traj_car3.gif" alt="HA2G">
+        </div>
+      </div>
+
+      <!-- 第三排 -->
+      <div class="columns is-multiline is-centered">
+        <div class="column">
+          <img src="./static/pose_videos/horse_5_multi.jpg" alt="Ground Truth">
+        </div>
+        <div class="column">
+          <img src="./static/pose_videos/horse_5_multi_traj.jpg" alt="Ground Truth">
+        </div>
+        <div class="column">
+          <img src="./static/pose_videos/traj_horse_5_multi.gif" alt="C2G2">
+        </div>
+      </div>
+
+      <!-- 第四排 -->
+      <div class="columns is-multiline is-centered">
+        <div class="column">
+          <img src="./static/pose_videos/boat3.jpg" alt="Ground Truth">
+          <!-- <h4 class="subtitle has-text-centered">Image</h4> -->
+        </div>
+        <div class="column">
+          <img src="./static/pose_videos/boat3_traj.jpg" alt="Ground Truth">
+          <!-- <h4 class="subtitle has-text-centered">Image</h4> -->
+        </div>
+        <div class="column">
+          <img src="./static/pose_videos/traj_boat3.gif" alt="C2G2">
+          <!-- <h4 class="subtitle has-text-centered">Trajectory</h4> -->
+        </div>
+      </div>
+
+      <!-- 第六排 -->
+      <div class="columns is-multiline is-centered">
+        <div class="column">
+          <img src="./static/pose_videos/car5.jpg" alt="Diffgesture">
+        </div>
+        <div class="column">
+          <img src="./static/pose_videos/car5_traj.jpg" alt="Diffgesture">
+        </div>
+        <div class="column">
+          <img src="./static/pose_videos/traj_car5.gif" alt="HA2G">
+        </div>
+      </div>
+
+      <!-- 第四排 -->
+      <div class="columns is-multiline is-centered">
+        <div class="column">
+          <img src="./static/pose_videos/two_horses.jpg" alt="Diffgesture">
+          <!-- <h4 class="subtitle has-text-centered">DragAnything</h4> -->
+        </div>
+        <div class="column">
+          <img src="./static/pose_videos/two_horses_traj.jpg" alt="Diffgesture">
+          <!-- <h4 class="subtitle has-text-centered">DragAnything</h4> -->
+        </div>
+        <div class="column">
+          <img src="./static/pose_videos/traj_two_horses.gif" alt="HA2G">
+          <!-- <h4 class="subtitle has-text-centered">PoseTraj</h4> -->
+        </div>
+      </div>
+
+      <div class="columns is-multiline is-centered">
+        <div class="column">
+          <img src="./static/pose_videos/motor2.jpg" alt="Ground Truth">
+        </div>
+        <div class="column">
+          <img src="./static/pose_videos/motor2_traj.jpg" alt="Ground Truth">
+        </div>
+        <div class="column">
+          <img src="./static/pose_videos/traj_motor2.gif" alt="C2G2">
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+
+<section class="section" id="BibTeX">
+  <div class="container is-max-desktop content">
+    <h2 class="title">BibTeX</h2>
+    <pre><code>@article{ji@2025posetraj,
+  author    = {Longbin, Ji and Zhong, Lei and Pengfei, Wei and Changjian, Li},
+  title     = {PoseTraj: Pose-Aware Trajectory Control in Video Diffusion},
+  journal   = {CVPR},
+  year      = {2025},
+}</code></pre>
+  </div>
+</section>
+
+
+<footer class="footer">
+  <div class="container">
+    <div class="content has-text-centered">
+      <a class="icon-link"
+         href="./static/videos/nerfies_paper.pdf">
+        <i class="fas fa-file-pdf"></i>
+      </a>
+      <a class="icon-link" href="https://github.com/keunhong" class="external-link" disabled>
+        <i class="fab fa-github"></i>
+      </a>
+    </div>
+    <div class="columns is-centered">
+      <div class="column is-8">
+        <div class="content">
+          <p>
+            This website is licensed under a <a rel="license"
+                                                href="http://creativecommons.org/licenses/by-sa/4.0/">Creative
+            Commons Attribution-ShareAlike 4.0 International License</a>.
+          </p>
+          <p>
+            We borrow the source code of this website from Nerfies <a
+              href="https://github.com/nerfies/nerfies.github.io">source code</a>. Last update: March 2025.
+          </p>
+        </div>
+      </div>
+    </div>
+  </div>
+</footer>
+
+</body>
+</html>
