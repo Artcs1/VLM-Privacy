@@ -73,7 +73,14 @@
             "medical information"
         ]
     },
-    "preganancy test":{
+    "pregunancy test":{
+        "synonym":[
+            "diagnosis",
+            "medical record"
+        ],
+        "contained_info":[]
+    },
+    "pregnancy test":{
         "synonym":[
             "diagnosis",
             "medical record"

@@ -21,6 +21,8 @@ from vllm import LLM, SamplingParams
 from qwen_vl_utils import process_vision_info
 import torch
 
+from tqdm import tqdm
+
 # Initialize the processor
 #processor = AutoProcessor.from_pretrained("Qwen/Qwen2.5-VL-72B-Instruct")
 processor = AutoProcessor.from_pretrained("Qwen/Qwen2.5-VL-72B-Instruct")
@@ -54,6 +56,7 @@ import tools.infer.utility as utility
 import pandas as pd
 import base64
 import numpy as np
+import math
 from PIL import Image, ImageDraw, ImageFont, ImageColor
 from IPython.display import display   
 from torchvision import transforms
@@ -102,34 +105,45 @@ def main():
     
     parser = argparse.ArgumentParser()
     parser.add_argument("--path")
-    parser.add_argument('--do_rotation', action='store_true', help="Set this flag to True")
+    parser.add_argument("--query", default='paper document')
     
     args2 = parser.parse_args([])
-    # args2.path = "/gpfs/projects/CascanteBonillaGroup/datasets/BIV-Priv_Image/support_images"
-    args2.path = "/gpfs/projects/CascanteBonillaGroup/datasets/BIV-Priv_Image/query_images" # DATASET PATH
-    args2.do_rotation = True
+    #args2.path = "/gpfs/projects/CascanteBonillaGroup/datasets/BIV-Priv_Image/query_images" # DATASET PATH
+    args2.path  = "/gpfs/projects/CascanteBonillaGroup/datasets/BIV-Priv_Image/all_images"
+    #args2.query = "paper document"
+    args2.query = "credit card"
     
     folder_path = args2.path
     files = glob.glob(folder_path + "/*")
+
+    if args2.query ==  'paper document':
+        if not os.path.exists(f"results_qwen_72B/"):
+            os.makedirs(f"results_qwen_72B/")
+            os.makedirs(f"results_qwen_72B_augmented/")
+    else: 
+        if not os.path.exists(f"results_qwen_72B_creditcards/"):
+            os.makedirs(f"results_qwen_72B_creditcards/")
+            os.makedirs(f"results_qwen_72B_creditcards_augmented/")
+      
     
-    if not os.path.exists(f"results_qwen_72B/"):
-        os.makedirs(f"results_qwen_72B/")
-       
+    for ii in tqdm(range(len(files))):
     
-    for ii in range (5, len(files)):
-    
-        print(ii)
         doc_img_info = {}
         image_path = files[ii]
         doc_img_info["image_path"] = image_path
+
+        if args2.query == 'paper document':
+            response, pil_image = qwen.call_vlm(image_path, "Locate paper document in the image, and output in JSON format.", temperature = 1, top_p=0.8)
+        else:
+            response, pil_image = qwen.call_vlm(image_path, "Is there a credit card in the image? Answer yes or no.", temperature = 1, top_p=0.8)
+            if not "yes" in response.lower():
+                continue
+            response, pil_image = qwen.call_vlm(image_path, "Locate credit card in the image, and output in JSON format.", temperature = 1, top_p=0.8)
+            
     
-        response, pil_image = qwen.call_vlm(image_path, "Locate paper document in the image, and output in JSON format.", temperature = 1, top_p=0.8)
     
         bbox_orig = qwen.extract_bbox(response)
         doc_img_info["doc_bbox"] = bbox_orig
-        # h_margin = 0
-        # v_margin = 0
-        # bbox = [bbox_orig[0]-h_margin, bbox_orig[1]-v_margin, bbox_orig[2]+h_margin, bbox_orig[3]+v_margin]
         cropped_image = qwen.crop_image(image_path, bbox_orig)
         pred_mask = segmentation_agent.segment_document(cropped_image)
     
@@ -156,50 +170,118 @@ def main():
     
         mean_angle = np.mean(angles)
         # print (mean_angle)
+
     
         total_angle = rotate_angle
         detailed_data = []
         if angles: ## if the ocr detects something to correct the angle, if not, leave as it is an get the vlm outputs
-            new_angle = mean_angle
-            # for new_angle in [mean_angle]: #, 180]:
-            rotated_image_v1_tmp = rotated_image_v1.copy()
-            rotated_image_v1_tmp = rotated_image_v1.rotate(new_angle, resample=Image.BICUBIC, expand=True, fillcolor=(255,255,255))
-            total_angle += new_angle
-            rotated_image_v1 = rotated_image_v1_tmp
-            # doc_img_info["rotate_angle"] = mean_angle # rotate_angle + mean_angle
-    
-            # print (f"Angle: {rotate_angle + mean_angle}\n---")
-            bboxes_text_info = qwen.get_finegrained_text(rotated_image_v1)
-            data = extract_bbox_removing_incomplete(bboxes_text_info)
-            # plot_text_inside_image(rotated_image_v1, data)
-    
+
+            total_angle += mean_angle
+            rotated_image_v1 = cropped_image_tmp.rotate(total_angle, resample=Image.BICUBIC, expand=True, fillcolor=(255,255,255))
             rotated_image_v1.save("rotated_image.jpg")
             points, strs, elapse = pladdleOCR()
-    
-            detailed_data.append({"rotate_angle": total_angle, "data_vlm": data, "data_ocr": [points, strs], "rotated_image": image_to_base64_str(pil_to_opencv(rotated_image_v1))})
-    
-            # src_im = utility.draw_e2e_res(points, strs, "rotated_image.jpg")
-            # plt.figure(figsize=(20, 20))
-            # plt.imshow(src_im)
-            # plt.show()
-    
-            doc_img_info["detailed_data"] = detailed_data
-        else:
-            new_angle = 0
-            total_angle += new_angle
-    
-            bboxes_text_info = qwen.get_finegrained_text(rotated_image_v1)
-            data = extract_bbox_removing_incomplete(bboxes_text_info)
-    
-            detailed_data.append({"rotate_angle": total_angle, "data_vlm": data, "data_ocr": [points, strs], "rotated_image": image_to_base64_str(pil_to_opencv(rotated_image_v1))})
-    
-            doc_img_info["detailed_data"] = detailed_data
+
+        bboxes_text_info = qwen.get_finegrained_text(rotated_image_v1)
+        data = extract_bbox_removing_incomplete(bboxes_text_info)
+        #print(pil_to_opencv(rotated_image_v1))
+        detailed_data.append({"rotate_angle": total_angle, "data_vlm": data, "data_ocr": [points, strs], "rotated_image": image_to_base64_str(pil_to_opencv(rotated_image_v1))})
+        doc_img_info["detailed_data"] = detailed_data
     
     
         filename = os.path.basename(image_path).replace(".jpeg", ".json")
         doc_img_info_converted = convert_np(doc_img_info)
-        with open(f"results_qwen_72B/{filename}", "w") as fp:
-            json.dump(doc_img_info_converted, fp, indent=4)
+    
+        if args2.query == 'paper document':
+            with open(f"results_qwen_72B/{filename}", "w") as fp:
+                json.dump(doc_img_info_converted, fp, indent=4)
+
+            #with open(f"results_qwen_72B/{filename}", 'r') as file:
+            #    data = json.load(file)
+        else:
+            with open(f"results_qwen_72B_creditcards/{filename}", "w") as fp:
+                json.dump(doc_img_info_converted, fp, indent=4)
+
+            #with open(f"results_qwen_72B_creditcards/{filename}", 'r') as file:
+            #    data = json.load(file)
+
+        data = doc_img_info_converted
+        original_detailed_data = {'data_vlm':[[],[]], 'data_ocr':[[],[]]}
+
+        #print(data)
+    
+        if data['detailed_data'][0]['data_vlm'] is not None:#data['doc_bbox'] is not None and data['detailed_data'][0]['data_vlm'] is not None:
+      
+            img = Image.open(image_path)
+            rotated_image_cv  = base64_str_to_image2(data['detailed_data'][0]['rotated_image'])
+            rotated_image_pil = opencv_to_pil(rotated_image_cv)
+            rot_im = rotated_image_pil.copy()
+            img_crop = img.crop(data['doc_bbox'])
+           
+            if data['doc_bbox'] is None:
+                crop_x = 0
+                crop_y = 0
+            else:
+                crop_x = data['doc_bbox'][0]
+                crop_y = data['doc_bbox'][1]
+    
+            rotate_angle = -data['detailed_data'][0]['rotate_angle'] # -32  # example angle in degrees
+            
+            polygons = []
+            texts = []
+            im  = img.copy()
+            for bbox_rotated_tmp in data['detailed_data'][0]['data_vlm']:
+                if 'bbox_2d' in bbox_rotated_tmp and 'text_content' in bbox_rotated_tmp and isinstance(bbox_rotated_tmp['bbox_2d'], list):
+                    bbox_rotated = bbox_rotated_tmp['bbox_2d']
+                    text = bbox_rotated_tmp['text_content']
+            
+                    if len(bbox_rotated) != 4:
+                        continue
+    
+                    poly_orig = rotated_bbox_polygon(bbox_rotated, rotate_angle, img_crop.size, rot_im.size)
+            
+                    final_poly = []
+                    for (x,y) in poly_orig:
+                        final_poly.append((crop_x+x, crop_y+y))
+            
+                    draw_orig = ImageDraw.Draw(im)
+                    draw_orig.polygon(final_poly, outline="red", width=2)
+            
+                    polygons.append(np.array(final_poly).tolist())
+                    texts.append(text)
+            
+            
+            original_detailed_data['data_vlm'][0].extend(polygons)
+            original_detailed_data['data_vlm'][1].extend(texts)
+            
+            im = img.copy()
+            draw_orig = ImageDraw.Draw(im)
+            
+            polygons = []
+            texts = []
+            texts = data['detailed_data'][0]['data_ocr'][1]
+            
+            for ocr_polygon in data['detailed_data'][0]['data_ocr'][0]:
+                poly_orig = rotated_polygon_points(ocr_polygon, rotate_angle, img_crop.size, rot_im.size)
+            
+                final_poly = []
+                for (x,y) in poly_orig:
+                    final_poly.append((crop_x+x, crop_y+y))
+            
+                draw_orig.polygon(final_poly, outline="green", width=2)
+                polygons.append(np.array(final_poly).tolist())
+            
+            original_detailed_data['data_ocr'][0].extend(polygons)
+            original_detailed_data['data_ocr'][1].extend(texts)
+            
+
+        data['original_detailed_data'] = [original_detailed_data]
+        if args2.query == 'paper document':
+            with open(f"results_qwen_72B_augmented/{filename}", "w") as fp:
+                json.dump(data, fp, indent=4)
+        else:
+            with open(f"results_qwen_72B_creditcards_augmented/{filename}", "w") as fp:
+                json.dump(data, fp, indent=4)
+
 
 if __name__ == "__main__":
     main()

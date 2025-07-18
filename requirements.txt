@@ -1,8 +1,0 @@
-paddleocr
-segment-anything
-vllm==0.7.3
-matplotlib
-pandas
-ipython
-timm
-torchscale

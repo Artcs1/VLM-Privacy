@@ -2,7 +2,7 @@ import os
 import sys
 
 os.environ["CUDA_DEVICE_ORDER"]="PCI_BUS_ID"
-os.environ["CUDA_VISIBLE_DEVICES"]="0,1,2"
+os.environ["CUDA_VISIBLE_DEVICES"]="0,1,2,3"
 
 os.environ["PIP_CACHE_DIR"]="/gpfs/projects/CascanteBonillaGroup/jmurrugarral/anaconda3/.cache"
 os.environ["HF_HOME"]="/gpfs/projects/CascanteBonillaGroup/jmurrugarral/anaconda3/.cache"
@@ -20,6 +20,7 @@ from vllm import LLM, SamplingParams
 from qwen_vl_utils import process_vision_info
 import torch
 
+import math
 import re
 import pickle
 import html
@@ -521,3 +522,254 @@ def is_horizontal(points, tolerance_degrees=5):
     angle_mod_180 = abs((angle_deg + 180) % 180 - 90)  # a way to measure how close to horizontal
     return angle_mod_180 >= (90 - tolerance_degrees)  
 
+def crop_image_bbox(image_path, bbox):
+    """
+    Crop an image using the given bounding box and save the result
+
+    :param image_path: Path to the input image
+    :param bbox: Bounding box in [x_min, y_min, x_max, y_max] format
+    :param output_path: Path to save the cropped image
+    """
+    # Open the image
+    image = Image.open(image_path)
+
+    # Crop the image using the bbox
+    cropped_image = image.crop(bbox)
+
+    return cropped_image
+
+def get_full_object_mask(file_path, segment_mask, bbox):
+    full_image = Image.open(file_path)
+    full_image_np = np.array(full_image)
+    full_height, full_width = full_image_np.shape[:2]
+    # full_height, full_width = 1080, 1920
+
+    # Bounding box (x_min, y_min, x_max, y_max)
+    # bbox = info['anns'][0]['bbox_2d']
+    x_min, y_min, x_max, y_max = bbox[0], bbox[1], bbox[2], bbox[3]
+
+    # Expected cropped mask size from the bbox
+    crop_h = y_max - y_min  # 791
+    crop_w = x_max - x_min  # 1483
+
+    # Simulate a cropped binary mask (for example purposes)
+    cropped_mask = np.array(segment_mask) #np.random.rand(crop_h, crop_w) > 0.5  # Binary mask of shape (791, 1483)
+
+    # Create an empty full image mask
+    full_mask = np.zeros((full_height, full_width), dtype=bool)
+
+    # Calculate the overlapping region between the bbox and the full image.
+    # Note: full image indices range from 0 to full_height-1 and 0 to full_width-1.
+    overlap_x_min = max(x_min, 0)
+    overlap_y_min = max(y_min, 0)
+    overlap_x_max = min(x_max, full_width)
+    overlap_y_max = min(y_max, full_height)
+
+    # Compute the offsets into the cropped mask.
+    offset_x = overlap_x_min - x_min
+    offset_y = overlap_y_min - y_min
+
+    # Determine the region of the cropped mask to use.
+    region_width = overlap_x_max - overlap_x_min
+    region_height = overlap_y_max - overlap_y_min
+    cropped_region = cropped_mask[offset_y:offset_y + region_height,
+                                offset_x:offset_x + region_width]
+
+    # Insert the cropped mask region into the full image mask.
+    full_mask[overlap_y_min:overlap_y_max, overlap_x_min:overlap_x_max] = cropped_region
+
+    return full_mask
+
+def full_image_zero_outside_mask(file_path, mask):
+    """Sets pixel values outside the mask to 0."""
+
+    image = Image.open(file_path)
+    image = np.array(image)
+
+    # Ensure image and mask have compatible shapes
+    if image.shape[:2] != mask.shape:
+        raise ValueError("Image and mask must have the same height and width.")
+
+    # Set values outside mask to 0
+    image[~mask] = 0
+
+    return Image.fromarray(image)
+
+def random_position_not_on_mask(mask, obj_size, max_attempts=1000):
+    """
+    Randomly select a top-left position for the object so that the object's region 
+    in the mask (of shape (height, width)) contains no True values.
+    
+    Parameters:
+        mask (np.ndarray): Boolean array (e.g. shape (1080, 1920)) where True indicates occupied area.
+        obj_size (tuple): (object_width, object_height).
+        max_attempts (int): Maximum number of attempts to find a valid position.
+    
+    Returns:
+        (x, y): Top-left coordinates for placing the object.
+    
+    Raises:
+        ValueError: If a valid position is not found within max_attempts.
+    """
+    mask_h, mask_w = mask.shape
+    obj_w, obj_h = obj_size
+
+    for _ in range(max_attempts):
+        # Randomly sample a top-left coordinate ensuring the object stays fully within the image.
+        x = random.randint(0, mask_w - obj_w)
+        y = random.randint(0, mask_h - obj_h)
+        # Check if the object region is completely free (all False)
+        if not mask[y:y+obj_h, x:x+obj_w].any():
+            return x, y
+
+    raise ValueError(f"No valid position found after {max_attempts} attempts.")
+
+def rotated_bbox_polygon(bbox_rot, angle, orig_size, rot_size):
+    """
+    Convert a bounding box from rotated image coordinates to the original image coordinates as a polygon.
+
+    Parameters:
+    - bbox_rot: tuple (x1, y1, x2, y2) representing the bounding box on the rotated image.
+    - angle: rotation angle in degrees (same as used in Image.rotate).
+    - orig_size: (width, height) of the original image.
+    - rot_size: (width, height) of the rotated image.
+
+    Returns:
+    - A list of four (x, y) tuples corresponding to the transformed corners in the original image.
+    """
+    # Convert angle to radians
+    angle_rad = math.radians(angle)
+
+    # Original image center
+    w, h = orig_size
+    cx, cy = w / 2, h / 2
+
+    # Rotated image center
+    new_w, new_h = rot_size
+    new_cx, new_cy = new_w / 2, new_h / 2
+
+    # Unpack bounding box in rotated image
+    x1, y1, x2, y2 = bbox_rot
+    # Define the four corners of the bounding box
+    corners = [(x1, y1), (x2, y1), (x2, y2), (x1, y2)]
+    transformed_corners = []
+
+    for (x_r, y_r) in corners:
+        # Shift the point so the rotated image's center is at the origin
+        x_dash = x_r - new_cx
+        y_dash = y_r - new_cy
+
+        # Apply the inverse rotation (rotating back by the same angle)
+        x_orig = x_dash * math.cos(angle_rad) + y_dash * math.sin(angle_rad) + cx
+        y_orig = -x_dash * math.sin(angle_rad) + y_dash * math.cos(angle_rad) + cy
+        transformed_corners.append((x_orig, y_orig))
+
+    return transformed_corners
+
+def rotated_to_original(x_rot, y_rot, angle, orig_size, rot_size):
+    """
+    Transform a point from the rotated image coordinates to the original image coordinates.
+
+    Parameters:
+    - x_rot, y_rot: Coordinates in the rotated image.
+    - angle: rotation angle in degrees (as used with Image.rotate).
+    - orig_size: (width, height) of the original image.
+    - rot_size: (width, height) of the rotated image.
+
+    Returns:
+    - (x_orig, y_orig): Transformed coordinates in the original image.
+    """
+    angle_rad = math.radians(angle)
+
+    # Original image center
+    w, h = orig_size
+    cx, cy = w / 2, h / 2
+
+    # Rotated image center
+    new_w, new_h = rot_size
+    new_cx, new_cy = new_w / 2, new_h / 2
+
+    # Shift to the rotated image center
+    x_dash = x_rot - new_cx
+    y_dash = y_rot - new_cy
+
+    # Inverse rotation
+    x_orig = x_dash * math.cos(angle_rad) + y_dash * math.sin(angle_rad) + cx
+    y_orig = -x_dash * math.sin(angle_rad) + y_dash * math.cos(angle_rad) + cy
+
+    return x_orig, y_orig
+
+def rotated_polygon_points(poly_rot, angle, orig_size, rot_size):
+    """
+    Convert a polygon from the rotated image coordinates to the original image coordinates.
+
+    Parameters:
+    - poly_rot: list of (x, y) points representing the polygon in the rotated image.
+    - angle: rotation angle in degrees.
+    - orig_size: (width, height) of the original image.
+    - rot_size: (width, height) of the rotated image.
+
+    Returns:
+    - A list of (x, y) tuples with transformed coordinates.
+    """
+    return [rotated_to_original(x, y, angle, orig_size, rot_size) for (x, y) in poly_rot]
+
+def extract_bbox_removing_incomplete(text):
+    """
+    Parse truncated JSON that looks like an array of objects,
+    discard any incomplete final object, and extract bbox_2d arrays.
+    """
+
+    # 1) Strip away the initial ```json plus everything before it
+    #    and any trailing backticks or text.
+    #    This regex grabs everything after ```json until the end,
+    #    then removes any trailing ``` if present.
+    match = re.search(r'```json\s*(.*)', text, re.DOTALL)
+    if not match:
+        return None
+    json_str = match.group(1)
+    # Remove any trailing triple backticks and beyond
+    json_str = re.sub(r'```.*$', '', json_str, flags=re.DOTALL).strip()
+
+    # 2) If the entire thing is wrapped in [...] at the top level, remove them.
+    #    We'll parse object by object ourselves.
+    #    - We'll do this only if it starts with '[' and ends with ']'.
+    if json_str.startswith('[') and json_str.endswith(']'):
+        # remove the first '[' and the last ']'
+        json_str = json_str[1:-1].strip()
+
+    # 3) Collect each *complete* top-level `{ ... }` object
+    #    ignoring any trailing incomplete object.
+    objects = []
+    brace_stack = 0
+    start_idx = None
+    for i, ch in enumerate(json_str):
+        if ch == '{':
+            if brace_stack == 0:
+                # Potential start of a new object
+                start_idx = i
+            brace_stack += 1
+        elif ch == '}':
+            brace_stack -= 1
+            if brace_stack == 0 and start_idx is not None:
+                # We found a complete object from start_idx to i
+                obj_str = json_str[start_idx:i+1]
+                objects.append(obj_str)
+                start_idx = None
+    
+    # Now `objects` holds each fully closed `{...}`
+
+    # 4) Build a valid JSON array from these objects
+    #    For example: [{...},{...},...]
+    if not objects:
+        return None  # No complete objects found
+    array_str = "[" + ",".join(objects) + "]"
+
+    # 5) Parse the array
+    try:
+        data_list = json.loads(array_str)
+    except json.JSONDecodeError:
+        return None  # Something else is malformed
+
+    return data_list 
+    
