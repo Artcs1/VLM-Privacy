@@ -217,3 +217,43 @@ class SEGMENTATION_AGENT():
         # plt.axis("off")
         # plt.show()
         return pred_mask
+
+    def segment_document_prompt(self, cropped_image, prompt = "the document", visualize=False):
+        # PROMPT = "the document"
+        # Preprocess
+        cropped_image_tmp = cropped_image.copy()
+        image_np = pil_to_opencv(cropped_image_tmp)
+        image_np = cv2.cvtColor(image_np, cv2.COLOR_BGR2RGB)
+        original_size_list = [image_np.shape[:2]]
+
+        image_beit = self.beit3_preprocess(image_np, self.IMAGE_SIZE).to(dtype=self.model_evf_sam.dtype, device=self.model_evf_sam.device)
+        image_sam, resize_shape = self.sam_preprocess(image_np, model_type=self.MODEL_TYPE)
+        image_sam = image_sam.to(dtype=self.model_evf_sam.dtype, device=self.model_evf_sam.device)
+        input_ids = self.tokenizer_evf_sam(prompt, return_tensors="pt")["input_ids"].to(device=self.model_evf_sam.device)
+
+        # inference
+        pred_mask = self.model_evf_sam.inference(
+            image_sam.unsqueeze(0),
+            image_beit.unsqueeze(0),
+            input_ids,
+            resize_list=[resize_shape],
+            original_size_list=original_size_list,
+        )
+
+        pred_mask = pred_mask.detach().cpu().numpy()[0]
+        pred_mask = pred_mask > 0
+
+        if visualize:
+            # Show visualization
+            save_img = image_np.copy()
+            save_img[pred_mask] = (
+                image_np * 0.5
+                + pred_mask[:, :, None].astype(np.uint8) * np.array([50, 120, 220]) * 0.5
+            )[pred_mask]
+            save_img = cv2.cvtColor(save_img, cv2.COLOR_RGB2BGR)
+
+            plt.imshow(cv2.cvtColor(save_img, cv2.COLOR_BGR2RGB))
+            plt.axis("off")
+            plt.show()
+
+        return pred_mask

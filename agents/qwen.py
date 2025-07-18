@@ -145,7 +145,7 @@ class QWEN_VLM:
             "multi_modal_data": mm_data,
         }
 
-        outputs = self.llm.generate([llm_inputs], sampling_params=self.sampling_params)
+        outputs = self.llm.generate([llm_inputs], sampling_params=self.sampling_params, use_tqdm=False)
         generated_text = outputs[0].outputs[0].text
         return generated_text
 
@@ -189,7 +189,7 @@ class QWEN_VLM:
             "multi_modal_data": mm_data,
         }
 
-        outputs = self.llm.generate([llm_inputs], sampling_params=self.sampling_params)
+        outputs = self.llm.generate([llm_inputs], sampling_params=self.sampling_params, use_tqdm=False)
         generated_text = outputs[0].outputs[0].text
         return generated_text
     
@@ -236,7 +236,7 @@ class QWEN_VLM:
             "multi_modal_data": mm_data,
         }
 
-        outputs = self.llm.generate([llm_inputs], sampling_params=self.sampling_params)
+        outputs = self.llm.generate([llm_inputs], sampling_params=self.sampling_params, use_tqdm=False)
         response = outputs[0].outputs[0].text
     
         return response, image_inputs[0]
@@ -425,7 +425,7 @@ class QWEN_VLM:
             "multi_modal_data": mm_data,
         }
     
-        outputs = self.llm.generate([llm_inputs], sampling_params=sampling_params)
+        outputs = self.llm.generate([llm_inputs], sampling_params=sampling_params, use_tqdm= False)
         generated_text = outputs[0].outputs[0].text
     
         return generated_text
@@ -470,7 +470,7 @@ class QWEN_VLM:
             "multi_modal_data": mm_data,
         }
 
-        outputs = self.llm.generate([llm_inputs], sampling_params=self.sampling_params)
+        outputs = self.llm.generate([llm_inputs], sampling_params=self.sampling_params, use_tqdm = False)
         generated_text = outputs[0].outputs[0].text
         return generated_text
     
@@ -519,6 +519,6 @@ class QWEN_VLM:
             "multi_modal_data": mm_data,
         }
 
-        outputs = self.llm.generate([llm_inputs], sampling_params=self.sampling_params)
+        outputs = self.llm.generate([llm_inputs], sampling_params=self.sampling_params, use_tqdm=False)
         generated_text = outputs[0].outputs[0].text
         return generated_text
