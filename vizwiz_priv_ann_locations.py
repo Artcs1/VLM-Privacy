@@ -73,7 +73,7 @@ def main():
 
     qwen = QWEN_VLM(llm, processor)
     
-    folder_path = "/gpfs/projects/CascanteBonillaGroup/paola/Qwen2.5-VL/results_qwen_72B"
+    folder_path = "results_qwen_72B"
     #folder_path = "results_qwen_72B_creditcards"
     files = glob.glob(folder_path + "/*")
     
