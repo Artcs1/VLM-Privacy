@@ -31,7 +31,7 @@ def main():
     if not os.path.exists(f"results_{args.model}_7B_img_categories_v2"):
         os.makedirs(f"results_{args.model}_7B_img_categories_v2")
 
-    with open('/gpfs/projects/CascanteBonillaGroup/paola/Qwen2.5-VL/results_qwen_7B_img_categories/all_meta_categories_vqa_results_v1.json', 'r') as file:
+    with open('results_qwen_72B_img_categories/all_meta_categories_locations_v4.json', 'r') as file:
         data = json.load(file)
 
     with open('/gpfs/projects/CascanteBonillaGroup/paola/Qwen2.5-VL/results_qwen_72B_img_categories/3d_objects.pkl', 'rb') as file:
@@ -188,10 +188,10 @@ def main():
                         'whiteboard marker': '32',
                         'remote control': '33'}
     
-    with open(f'/gpfs/projects/CascanteBonillaGroup/datasets/BIV-Priv_Image/results_qwen_72B_img_categories/documents_fine_grained_labels_per_metacategory_v2.json', 'r') as file:
+    with open(f'results_qwen_72B_img_categories/documents_fine_grained_labels_per_metacategory.json', 'r') as file:
         documents_data_finegrained_categories = json.load(file)
 
-    with open(f'/gpfs/projects/CascanteBonillaGroup/datasets/BIV-Priv_Image/results_qwen_72B_img_categories/creditcards_fine_grained_labels_per_metacategory_v2.json', 'r') as file:
+    with open(f'results_qwen_72B_img_categories/creditcards_fine_grained_labels_per_metacategory.json', 'r') as file:
         creditcards_data_finegrained_categories = json.load(file)
 
     if args.model == "qwen25":
@@ -250,11 +250,14 @@ def main():
 
             file_name = os.path.basename(img_path).replace('.jpeg', '.json')
 
+            print(img_path)
+    
 
-            if os.path.exists(f'/gpfs/projects/CascanteBonillaGroup/datasets/BIV-Priv_Image/results_qwen_72B_creditcards_augmented_v2/{file_name}'):
-                with open(f'/gpfs/projects/CascanteBonillaGroup/datasets/BIV-Priv_Image/results_qwen_72B_creditcards_augmented_v2/{file_name}', 'r') as file:
+
+            if os.path.exists(f'results_qwen_72B_creditcards_augmented/{file_name}'):
+                with open(f'results_qwen_72B_creditcards_augmented/{file_name}', 'r') as file:
                     data_finegrained = json.load(file)
-                with open(f'/gpfs/projects/CascanteBonillaGroup/datasets/BIV-Priv_Image/results_qwen_72B_creditcards_labels/{file_name}', 'r') as file:
+                with open(f'results_qwen_72B_creditcards_labels/{file_name}', 'r') as file:
                     data_finegrained_labels = json.load(file)  
                 try:
                     data_finegrained_categories = creditcards_data_finegrained_categories[img_path]['finegrained_labels']
@@ -262,9 +265,9 @@ def main():
                     data_finegrained_categories = []
             else:
                 # documents fine-grained
-                with open(f'/gpfs/projects/CascanteBonillaGroup/datasets/BIV-Priv_Image/results_qwen_72B_augmented_v2/{file_name}', 'r') as file:
+                with open(f'results_qwen_72B_augmented/{file_name}', 'r') as file:
                     data_finegrained = json.load(file)
-                with open(f'/gpfs/projects/CascanteBonillaGroup/datasets/BIV-Priv_Image/results_qwen_72B_labels/{file_name}', 'r') as file:
+                with open(f'results_qwen_72B_labels/{file_name}', 'r') as file:
                     data_finegrained_labels = json.load(file)  
                 try:
                     data_finegrained_categories = documents_data_finegrained_categories[img_path]['finegrained_labels']
@@ -285,7 +288,9 @@ def main():
 
             # if data_finegrained_labels['labels_full_image'] != 'Empty':
 
-                
+               
+            print(data_finegrained_categories)
+            print(data_finegrained['original_detailed_data'][0]['data_vlm'][0]) 
             if data_finegrained_categories and data_finegrained['original_detailed_data'][0]['data_vlm'][0]:
                 
                 high_risk_fine_grained_masked = Image.open(img_path)
