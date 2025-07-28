@@ -81,4 +81,10 @@ python3 vizwiz_process_statistics.py
 If you use this model in your research, please consider citing:
 
 ```
+@article{Murrugarra_2025_colm,
+  author    = {Murrugarra-Llerena, Jeffri and Haoran, Niu and K.Suzanne, Barber and Daume III, Hal and Trista Cao, Yang and Cascante-Bonilla, Paola},
+  title     = {Beyond Blanket Masking: Examining Granularity for Privac Protection in Images Captured by Blind and Low Vision Users},
+  journal   = {COLM},
+  year      = {2025},
+}
 ```
