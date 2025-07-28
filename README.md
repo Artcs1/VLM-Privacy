@@ -1,4 +1,4 @@
-y<div align="center">
+<div align="center">
 <h2> [COLM2025] Beyond Blanket Masking: Examining Granularity for Privacy
 Protection in Images Captured by Blind and Low Vision Users </h2>
 
