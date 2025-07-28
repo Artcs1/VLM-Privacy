@@ -1,4 +1,4 @@
-<div align="center">
+y<div align="center">
 <h2> [COLM2025] Beyond Blanket Masking: Examining Granularity for Privacy
 Protection in Images Captured by Blind and Low Vision Users </h2>
 
@@ -55,7 +55,27 @@ We show how to use our agents and their interactions in demo.ipynb
 python3 vizwiz_priv_ann.py
 ```
 2. Compute the labels
-   
+```
+python3 vizwiz_priv_ann_label.py
+```
+3.  Compute locations
+```
+python3 vizwiz_priv_ann_locations.py
+```  
+4.  Compute metalabels
+```
+python3 vizwiz_priv_ann_metalabel.py
+```
+5.  Run the evaluations
+```
+python3 vizwiz_vqa_all_fixed_object.py
+```
+6.  Compute the statistics
+```
+python3 vizwiz_process_statistics.py
+```
+
+
 ## Citation
 
 If you use this model in your research, please consider citing:
