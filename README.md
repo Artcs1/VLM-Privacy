@@ -8,7 +8,7 @@ Jeffri Murrugarra-Llerena<sup>1</sup>, Haoran Niu<sup>2</sup>, K. Suzanne Barber
 
 </div>
 
-[[`Paper`]()] [[`Project`](https://github.com/Artcs1/VLMPrivacy)] [[`BibTeX`](#citation)]
+[[`Paper`]()] [[`Project`](https://artcs1.github.io/VLMPrivacy/)] [[`BibTeX`](#citation)]
 
 ## About
 
