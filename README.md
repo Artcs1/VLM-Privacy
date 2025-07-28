@@ -50,8 +50,12 @@ We show how to use our agents and their interactions in demo.ipynb
 
 ## Code for validation experiments
 
-Coming soon ...
-
+1. Compute detections
+```
+python3 vizwiz_priv_ann.py
+```
+2. Compute the labels
+   
 ## Citation
 
 If you use this model in your research, please consider citing:
