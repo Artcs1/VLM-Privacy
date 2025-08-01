@@ -1,5 +1,6 @@
-import torch
 import os
+
+import torch
 import re
 import json
 import pickle
@@ -17,6 +18,8 @@ from PIL import Image, ImageDraw
 from io import BytesIO
 from qwen_vl_utils import process_vision_info
 from utils import *
+
+
 
 
 def main():

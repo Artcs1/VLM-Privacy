@@ -4,17 +4,6 @@ import sys
 os.environ["CUDA_DEVICE_ORDER"]="PCI_BUS_ID"
 os.environ["CUDA_VISIBLE_DEVICES"]="0,1,2,3"
 
-ANACONDA_PATH = "/gpfs/projects/CascanteBonillaGroup/jmurrugarral/anaconda3/"
-
-os.environ["PIP_CACHE_DIR"]= ANACONDA_PATH +".cache"
-os.environ["HF_HOME"]=ANACONDA_PATH + ".cache"
-os.environ["HF_DATASETS_CACHE"]=ANACONDA_PATH + ".cache/datasets"
-os.environ["TRANSFORMERS_CACHE"]=ANACONDA_PATH + ".cache/models"
-
-#__dir__ = "/gpfs/projects/CascanteBonillaGroup/paola/PaddleOCR"
-#sys.path.append(__dir__)
-#sys.path.insert(0, os.path.abspath(os.path.join(__dir__, "../..")))
-#sys.path.append("/gpfs/projects/CascanteBonillaGroup/paola/EVF-SAM/")
 
 from transformers import AutoProcessor
 from vllm import LLM, SamplingParams
@@ -80,6 +69,7 @@ from agents.orientation import ORIENTATION_AGENT
 from agents.segmentation import SEGMENTATION_AGENT
 from agents.ocr import OCR_AGENT, pladdleOCR
 from utils import *
+from config import cfg
 
 
 def main():
@@ -108,8 +98,7 @@ def main():
     parser.add_argument("--query", default='paper document')
     
     args2 = parser.parse_args([])
-    #args2.path = "/gpfs/projects/CascanteBonillaGroup/datasets/BIV-Priv_Image/query_images" # DATASET PATH
-    args2.path  = "/gpfs/projects/CascanteBonillaGroup/datasets/BIV-Priv_Image/all_images"
+    args2.path  = cfg.data_path 
     #args2.query = "paper document"
     args2.query = "credit card"
     

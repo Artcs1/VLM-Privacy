@@ -13,9 +13,9 @@ from tqdm import tqdm
 
 
 all_files = []
-all_files.append('/gpfs/projects/CascanteBonillaGroup/paola/Qwen2.5-VL/results_qwen_7B_img_categories/all_meta_categories_vqa_results_fixed_object*.json')  # change to your paths
-all_files.append('/gpfs/projects/CascanteBonillaGroup/paola/Qwen2.5-VL/results_llava16_7B_img_categories_v2/all_meta_categories_vqa_results_fixed_object*.json')  # change to your paths
-all_files.append('/gpfs/projects/CascanteBonillaGroup/paola/Qwen2.5-VL/results_gemma3_7B_img_categories_v2/all_meta_categories_vqa_results_fixed_object*.json') # change to your paths
+all_files.append('results_qwen_7B_img_categories/all_meta_categories_vqa_results_fixed_object*.json')  # change to your paths
+all_files.append('results_llava16_7B_img_categories_v2/all_meta_categories_vqa_results_fixed_object*.json')  # change to your paths
+all_files.append('results_gemma3_7B_img_categories_v2/all_meta_categories_vqa_results_fixed_object*.json') # change to your paths
 
 for path in all_files:
     
@@ -82,7 +82,7 @@ meta_categories = [
     "id card",
     ]
 
-path = '/gpfs/projects/CascanteBonillaGroup/paola/Qwen2.5-VL/results_qwen_7B_img_categories_v2/all_meta_categories_vqa_results_fixed_object*.json'
+path = 'results_qwen_7B_img_categories_v2/all_meta_categories_vqa_results_fixed_object*.json'
 files = glob.glob(path)
 all_tables = []
 

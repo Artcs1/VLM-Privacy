@@ -4,13 +4,6 @@ import sys
 os.environ["CUDA_DEVICE_ORDER"]="PCI_BUS_ID"
 os.environ["CUDA_VISIBLE_DEVICES"]="0,1,2,3"
 
-ANACONDA_PATH = "/gpfs/projects/CascanteBonillaGroup/jmurrugarral/anaconda3/"
-
-os.environ["PIP_CACHE_DIR"]= ANACONDA_PATH +".cache"
-os.environ["HF_HOME"]=ANACONDA_PATH + ".cache"
-os.environ["HF_DATASETS_CACHE"]=ANACONDA_PATH + ".cache/datasets"
-os.environ["TRANSFORMERS_CACHE"]=ANACONDA_PATH + ".cache/models"
-
 from transformers import AutoProcessor
 from vllm import LLM, SamplingParams
 from qwen_vl_utils import process_vision_info
