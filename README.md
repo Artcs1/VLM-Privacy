@@ -50,7 +50,7 @@ We show how to utilize our agents and their interactions in demo.ipynb
 
 ## Download the dataset
 
-Download the BIV PRIV SEG dataset here: https://vizwiz.org/tasks-and-datasets/object-localization/. Put all images in a folder named 'all_images' and modify config.py with the path.
+Download the **BIVPRIVSEG** dataset here: https://vizwiz.org/tasks-and-datasets/object-localization/. Put all images in a folder named 'all_images' and modify config.py with that path.
 
 ## Code for validation experiments
 
