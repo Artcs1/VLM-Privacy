@@ -4,16 +4,10 @@ import sys
 os.environ["CUDA_DEVICE_ORDER"]="PCI_BUS_ID"
 os.environ["CUDA_VISIBLE_DEVICES"]="0,1,2,3"
 
-os.environ["PIP_CACHE_DIR"]="/gpfs/projects/CascanteBonillaGroup/jmurrugarral/anaconda3/.cache"
-os.environ["HF_HOME"]="/gpfs/projects/CascanteBonillaGroup/jmurrugarral/anaconda3/.cache"
-os.environ["HF_DATASETS_CACHE"]="/gpfs/projects/CascanteBonillaGroup/jmurrugarral/anaconda3/.cache/datasets"
-os.environ["TRANSFORMERS_CACHE"]="/gpfs/projects/CascanteBonillaGroup/jmurrugarral/anaconda3/.cache/models"
-
-
-__dir__ = "/gpfs/projects/CascanteBonillaGroup/paola/PaddleOCR"
-sys.path.append(__dir__)
-sys.path.insert(0, os.path.abspath(os.path.join(__dir__, "../..")))
-sys.path.append("/gpfs/projects/CascanteBonillaGroup/paola/EVF-SAM/")
+#__dir__ = "/gpfs/projects/CascanteBonillaGroup/paola/PaddleOCR"
+#sys.path.append(__dir__)
+#sys.path.insert(0, os.path.abspath(os.path.join(__dir__, "../..")))
+#sys.path.append("/gpfs/projects/CascanteBonillaGroup/paola/EVF-SAM/")
 
 from transformers import AutoProcessor
 from vllm import LLM, SamplingParams
@@ -68,8 +62,9 @@ def qwen25():
         "Qwen/Qwen2.5-VL-7B-Instruct",
         torch_dtype=torch.bfloat16,
         attn_implementation="flash_attention_2",
-        device_map="auto",
+        device_map="cuda:0",
     )
+    print(model.device)
     processor = AutoProcessor.from_pretrained("Qwen/Qwen2.5-VL-7B-Instruct")
     model.eval()
     return model, processor
@@ -120,6 +115,7 @@ def vqa_yes_prob(model_7b, processor_7b, image, question_prompt, model="qwen25",
             padding=True,
             return_tensors="pt",
         )
+
         inputs = inputs.to(model_7b.device)
 
         # Inference: Generation of the output
@@ -130,6 +126,7 @@ def vqa_yes_prob(model_7b, processor_7b, image, question_prompt, model="qwen25",
                                     # return_dict=True,
                                     output_scores=True,
                                     do_sample=False)
+
             generated_ids = outputs["sequences"]
             generated_ids_trimmed = [
                 out_ids[len(in_ids) :] for in_ids, out_ids in zip(inputs.input_ids, generated_ids)

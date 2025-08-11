@@ -18,9 +18,7 @@ from PIL import Image, ImageDraw
 from io import BytesIO
 from qwen_vl_utils import process_vision_info
 from utils import *
-
-
-
+from tqdm import tqdm
 
 def main():
 
@@ -204,8 +202,6 @@ def main():
     elif args.model == "gemma3":
         model, processor = gemma3()
 
-    print(model.device)
-
     def ask_extra_answerable_questions(image_to_ask, anns):
         answerable_qas = []
         if anns['label'] not in answerable_questions.keys():
@@ -217,12 +213,13 @@ def main():
             answerable_qas.append([answerable, answerable_score])
         return answerable_qas
 
-    print("1")
+    print(len(data))
 
-    for ii, (img_path, anns) in enumerate(data.items()):
+    
+
+    for ii, (img_path, anns) in tqdm(enumerate(data.items())):
 
         print(ii)
-
 
         if anns['full_image_mask'] != 'None': # and anns['high_risk_fine_grained_masked_private_obj'] != 'None':
            
@@ -252,10 +249,6 @@ def main():
             # ========================================================================
 
             file_name = os.path.basename(img_path).replace('.jpeg', '.json')
-
-            print(img_path)
-    
-
 
             if os.path.exists(f'results_qwen_72B_creditcards_augmented/{file_name}'):
                 with open(f'results_qwen_72B_creditcards_augmented/{file_name}', 'r') as file:
@@ -292,12 +285,9 @@ def main():
             # if data_finegrained_labels['labels_full_image'] != 'Empty':
 
                
-            print(data_finegrained_categories)
-            print(data_finegrained['original_detailed_data'][0]['data_vlm'][0]) 
             if data_finegrained_categories and data_finegrained['original_detailed_data'][0]['data_vlm'][0]:
                 
                 high_risk_fine_grained_masked = Image.open(img_path)
-                print(img_path)
                 draw_high_risk = ImageDraw.Draw(high_risk_fine_grained_masked)
 
                 for ii_text, text in enumerate(data_finegrained['original_detailed_data'][0]['data_vlm'][1]):
@@ -315,41 +305,45 @@ def main():
 
             # print (anns['label'], '-', object_name)
 
-            # plt.imshow(full_image)
-            # plt.show()
+ #           plt.imshow(full_image)
+ #           # plt.show()
+ #           plt.savefig("full_image.png")
 
-            print('preguntas')
-            print(model.device)
+
+ #           plt.imshow(masked_full_image)
+ #           # plt.show()
+ #           plt.savefig("masked_full_image.png")
+
+ #           plt.imshow(all_fine_grained_masked)
+ #           # plt.show()
+ #           plt.savefig("fine_full_image.png")
+
+ #           if high_risk_fine_grained_masked:
+ #               plt.imshow(high_risk_fine_grained_masked)
+ #               # plt.show()
+ #               plt.savefig("high_risk.png")
+ #
+
 
             full_image_private_obj = vqa_yes_prob(model, processor, full_image, f"Is there a {anns['label']} in this image?", model=args.model)
-            print('vqa')
             full_image_non_private_obj = vqa_yes_prob(model, processor, full_image, f"Is there a {object_name} in this image?", model=args.model)
 
-            print('vqa')
             anns['full_image_private_obj'] = full_image_private_obj
             anns['full_image_non_private_obj'] = full_image_non_private_obj
             # print (full_image_private_obj, '-', full_image_non_private_obj)
             answerable_qas = ask_extra_answerable_questions(full_image, anns)
             anns['full_image_answerable_qas'] = answerable_qas
 
-            # plt.imshow(masked_full_image)
-            # plt.show()
             masked_full_image_private_obj = vqa_yes_prob(model, processor, masked_full_image, f"Is there a {anns['label']} in this image?", model=args.model)
-            print('vqa')
             masked_full_image_non_private_obj = vqa_yes_prob(model, processor, masked_full_image, f"Is there a {object_name} in this image?", model=args.model)
-            print('vqa')
             anns['masked_full_image_private_obj'] = masked_full_image_private_obj
             anns['masked_full_image_non_private_obj'] = masked_full_image_non_private_obj
             # print (masked_full_image_private_obj, '-', masked_full_image_non_private_obj)
             answerable_qas = ask_extra_answerable_questions(masked_full_image, anns)
             anns['masked_full_image_answerable_qas'] = answerable_qas
 
-            # plt.imshow(all_fine_grained_masked)
-            # plt.show()
             all_fine_grained_masked_private_obj = vqa_yes_prob(model, processor, all_fine_grained_masked, f"Is there a {anns['label']} in this image?", model=args.model)
-            print('vqa')
             all_fine_grained_masked_non_private_obj = vqa_yes_prob(model, processor, all_fine_grained_masked, f"Is there a {object_name} in this image?", model=args.model)
-            print('vqa')
             anns['all_fine_grained_masked_private_obj'] = all_fine_grained_masked_private_obj
             anns['all_fine_grained_masked_non_private_obj'] = all_fine_grained_masked_non_private_obj
             # print (all_fine_grained_masked_private_obj, '-', all_fine_grained_masked_non_private_obj)
@@ -359,14 +353,13 @@ def main():
             # breakpoint()
             # plt.imshow(high_risk_fine_grained_masked)
             # plt.show()
-
             if high_risk_fine_grained_masked:
-                # plt.imshow(high_risk_fine_grained_masked)
+                plt.imshow(high_risk_fine_grained_masked)
                 # plt.show()
+                plt.savefig("high_risk.png")
+ 
                 high_risk_fine_grained_masked_private_obj = vqa_yes_prob(model, processor, high_risk_fine_grained_masked, f"Is there a {anns['label']} in this image?", model=args.model)
-                print('vqa')
                 high_risk_fine_grained_masked_non_private_obj = vqa_yes_prob(model, processor, high_risk_fine_grained_masked, f"Is there a {object_name} in this image?", model=args.model)
-                print('vqa')
                 anns['high_risk_fine_grained_masked_private_obj'] = high_risk_fine_grained_masked_private_obj
                 anns['high_risk_fine_grained_masked_non_private_obj'] = high_risk_fine_grained_masked_non_private_obj
                 # print (high_risk_fine_grained_masked_private_obj, '-', high_risk_fine_grained_masked_non_private_obj)
@@ -386,7 +379,7 @@ def main():
             anns['high_risk_fine_grained_masked_non_private_obj'] = 'None'
 
         # break
-        if ii % 100 == 0:
+        if ii % 1 == 0:
             filename = f"all_meta_categories_vqa_results_fixed_object_{args.control_object}.json"
             with open(f"results_{args.model}_7B_img_categories_v2/{filename}", "w") as fp:
                 json.dump(data, fp, indent=4, cls=NumpyEncoder)

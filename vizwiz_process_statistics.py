@@ -13,9 +13,9 @@ from tqdm import tqdm
 
 
 all_files = []
-all_files.append('results_qwen_7B_img_categories/all_meta_categories_vqa_results_fixed_object*.json')  # change to your paths
-all_files.append('results_llava16_7B_img_categories_v2/all_meta_categories_vqa_results_fixed_object*.json')  # change to your paths
-all_files.append('results_gemma3_7B_img_categories_v2/all_meta_categories_vqa_results_fixed_object*.json') # change to your paths
+all_files.append('results_qwen25_7B_img_categories_v2/all_meta_categories_vqa_results_fixed_object*.json')  # change to your paths
+#all_files.append('results_llava16_7B_img_categories_v2/all_meta_categories_vqa_results_fixed_object*.json')  # change to your paths
+#all_files.append('results_gemma3_7B_img_categories_v2/all_meta_categories_vqa_results_fixed_object*.json') # change to your paths
 
 for path in all_files:
     
@@ -32,14 +32,19 @@ for path in all_files:
                     'all_fine_grained_masked_non_private_obj': [],
                     'high_risk_fine_grained_masked_private_obj': [],
                     'high_risk_fine_grained_masked_non_private_obj': [] }
+
+    print(files)
     
     for ii_file in files:
-        #print (ii_file)
+        print (ii_file)
         with open(ii_file, 'r') as file:
+        
             data = json.load(file)
+            #print(data)
     
         vqa_score_keys = [k for k in next(iter(data.values())) if '_private_obj' in k]
-        grouped = {key: [entry[key] for entry in data.values() if entry['high_risk_fine_grained_masked_private_obj'] != 'None'] for key in vqa_score_keys}
+        print(vqa_score_keys)
+        grouped = {key: [entry[key] for entry in data.values() if entry['high_risk_fine_grained_masked_private_obj'] != "None"] for key in vqa_score_keys}
     
         for key in vqa_score_keys:
             total_records = 0
@@ -82,7 +87,7 @@ meta_categories = [
     "id card",
     ]
 
-path = 'results_qwen_7B_img_categories_v2/all_meta_categories_vqa_results_fixed_object*.json'
+path = 'results_qwen25_7B_img_categories_v2/all_meta_categories_vqa_results_fixed_object*.json'
 files = glob.glob(path)
 all_tables = []
 
@@ -165,4 +170,4 @@ legend.get_frame().set_facecolor((1, 1, 1, 0.5))
     
 plt.tight_layout()
 plt.savefig("answerable_plot.pdf")
-plt.show()
+#plt.show()
