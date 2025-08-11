@@ -142,12 +142,16 @@ def main():
     paths = ["results_qwen_72B", "results_qwen_72B_creditcards"]
 
     for folder_path in paths:
+
+
     
         files = glob.glob(folder_path + "/*")
-          
+        
         for ii in tqdm(range(0, len(files))):
     
             filepath = files[ii]
+
+
             with open(filepath, 'r') as file:
                 data = json.load(file)
         
