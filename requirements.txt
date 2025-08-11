@@ -1,0 +1,8 @@
+paddleocr
+segment-anything 
+vllm
+matplotlib
+pandas
+ipython
+timm
+torchscale
