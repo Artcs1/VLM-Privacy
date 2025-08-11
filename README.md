@@ -74,6 +74,10 @@ python3 vizwiz_priv_ann_metalabel.py
 ```
 python3 vizwiz_vqa_all_fixed_object.py
 ```
+or run multiple tries with different objects
+```
+python3 vizwiz_vqa_all_fixed_object.py --control_object [mouse|wooden spoon|puzzle toy|red spatula|dino toy|milk carton|keyboard|dumbbell|remote control|whiteboard marker] --model [qwen25|llava16|gemma3]
+```
 6.  Compute the statistics
 ```
 python3 vizwiz_process_statistics.py
