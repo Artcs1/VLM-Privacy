@@ -98,7 +98,7 @@ def main():
     parser.add_argument("--query", default='paper document')
     
     args2 = parser.parse_args([])
-    args2.path  = cfg.data_path 
+    args2.path  = cfg['data_path']
     folder_path = args2.path
     files = glob.glob(folder_path + "/*")
 
