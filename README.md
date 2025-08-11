@@ -46,7 +46,11 @@ pip install -r requirements.txt
 
 ## Demo
 
-We show how to use our agents and their interactions in demo.ipynb
+We show how to utilize our agents and their interactions in demo.ipynb
+
+## Download the dataset
+
+Download the BIV PRIV SEG dataset here: https://vizwiz.org/tasks-and-datasets/object-localization/. Put all images in a folder named 'all_images' and modify config.py with the path.
 
 ## Code for validation experiments
 
