@@ -7,3 +7,5 @@ ipython
 timm
 torchscale
 scikit-image
+albumentations
+lmdb
