@@ -41,7 +41,7 @@ pip install -r requirements.txt
 4. Download external models (PaddleOCR)
    
 ```
-!wget https://paddleocr.bj.bcebos.com/dygraph_v2.0/pgnet/e2e_server_pgnetA_infer.tar && tar xf e2e_server_pgnetA_infer.tar
+wget https://paddleocr.bj.bcebos.com/dygraph_v2.0/pgnet/e2e_server_pgnetA_infer.tar && tar xf e2e_server_pgnetA_infer.tar
 ```
 
 ## Demo
