@@ -379,7 +379,7 @@ def main():
             anns['high_risk_fine_grained_masked_non_private_obj'] = 'None'
 
         # break
-        if ii % 1 == 0:
+        if ii % 100 == 0:
             filename = f"all_meta_categories_vqa_results_fixed_object_{args.control_object}.json"
             with open(f"results_{args.model}_7B_img_categories_v2/{filename}", "w") as fp:
                 json.dump(data, fp, indent=4, cls=NumpyEncoder)
