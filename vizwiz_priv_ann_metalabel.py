@@ -60,6 +60,7 @@ from utils import *
 
 
 from tqdm import tqdm
+from config import cfg
 
 qwen = QWEN_VLM(llm, processor)
 
@@ -89,7 +90,7 @@ for folder_path in paths:
                         break
                 
                 filename = os.path.basename(ff)
-                filename_metacategory = "/gpfs/projects/CascanteBonillaGroup/datasets/BIV-Priv_Image/all_images/"+filename.replace(".json", ".jpeg")
+                filename_metacategory = cfg['data_path']+'/'+filename.replace(".json", ".jpeg")
                 res = qwen.guided_labeling_per_match_per_metacategory(vlm_output_data['image_path'], vlm_finegrained[kk], all_meta_categories[filename_metacategory])
                 dict_finegrained_labeled[vlm_finegrained[kk]] = res
                 # res = qwen.guided_labeling_per_match(vlm_output_data['image_path'], vlm_finegrained[kk])
@@ -109,7 +110,6 @@ for folder_path in paths:
         
             # break
         except:
-            print(ii)
             problematic_files.append(ff)
             # break
     
