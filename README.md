@@ -62,15 +62,19 @@ python3 vizwiz_priv_ann.py
 ```
 python3 vizwiz_priv_ann_label.py
 ```
-3.  Compute locations
+3.  Download HOT3D dataset
+```
+python3 download_hot3d.py
+```  
+4.  Compute locations
 ```
 python3 vizwiz_priv_ann_locations.py
 ```  
-4.  Compute metalabels
+5.  Compute metalabels
 ```
 python3 vizwiz_priv_ann_metalabel.py
 ```
-5.  Run the evaluations
+6.  Run the evaluations
 ```
 python3 vizwiz_vqa_all_fixed_object.py
 ```
@@ -78,7 +82,7 @@ or run multiple tries with different objects
 ```
 python3 vizwiz_vqa_all_fixed_object.py --control_object [mouse|wooden spoon|puzzle toy|red spatula|dino toy|milk carton|keyboard|dumbbell|remote control|whiteboard marker] --model [qwen25|llava16|gemma3]
 ```
-6.  Compute the statistics
+7.  Compute the statistics
 ```
 python3 vizwiz_process_statistics.py
 ```
