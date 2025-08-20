@@ -9,3 +9,5 @@ torchscale
 scikit-image
 albumentations
 lmdb
+trimesh
+pyrender
