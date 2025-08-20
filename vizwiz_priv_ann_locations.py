@@ -3,6 +3,7 @@ import sys
 
 os.environ["CUDA_DEVICE_ORDER"]="PCI_BUS_ID"
 os.environ["CUDA_VISIBLE_DEVICES"]="0,1,2,3"
+os.environ['PYOPENGL_PLATFORM'] = 'egl'  # or try 'osmesa'
 
 from transformers import AutoProcessor
 from vllm import LLM, SamplingParams
@@ -61,6 +62,153 @@ from agents.ocr import OCR_AGENT, pladdleOCR
 from utils import *
 
 from tqdm import tqdm
+
+import trimesh
+import pyrender
+import pickle
+        
+def inpaint_3d_object(model_path, object_scale_factor = 0.5, x_rotation = 55, y_rotation = 120):
+    # 1. Load your Trimesh scene (which has a camera)
+    scene = trimesh.load(model_path)  # or .obj, etc.
+
+    # If the loaded object is just a mesh, wrap it in a scene so we can have a camera
+    if isinstance(scene, trimesh.Trimesh):
+        scene = trimesh.Scene(scene)
+
+    # scene.camera -> <trimesh.scene.Camera>
+    # scene.camera_transform -> 4x4 matrix with camera extrinsics
+    trimesh_camera = scene.camera
+    trimesh_camera_transform = scene.camera_transform
+
+    # print('Trimesh camera:', trimesh_camera)
+    # Example output:
+    # <trimesh.scene.Camera>
+    #  FOV: [60. 45.]
+    #  Resolution: [1800 1350]
+
+    # 2. Convert the Trimesh scene to a PyRender scene
+    pyrender_scene = pyrender.Scene.from_trimesh_scene(scene)
+
+    # ====
+
+    # Identify one of the mesh nodes to rotate.
+    # (If your scene contains multiple nodes, choose the one you want to rotate.)
+    mesh_node = None
+    for node in pyrender_scene.nodes:
+        if node.mesh is not None:
+            mesh_node = node
+            break
+
+    if mesh_node is None:
+        raise ValueError("No mesh node found in the scene!")
+
+    # Create a rotation matrix: rotate 45° (pi/4 radians) about the Y-axis.
+    angle = np.radians(y_rotation)
+    rotation1 = trimesh.transformations.rotation_matrix(angle, [0, 1, 0])
+    # Apply the rotation to the mesh node.
+    # Multiplying on the left applies the rotation before the node's current transform.
+    new_pose = rotation1 @ mesh_node.matrix
+    pyrender_scene.set_pose(mesh_node, pose=new_pose)
+
+    angle = np.radians(x_rotation)
+    # Create a rotation matrix: rotate 10° (pi/4 radians) about the X-axis.
+    rotation2 = trimesh.transformations.rotation_matrix(angle, [1, 0, 0])
+    new_pose = rotation2 @ mesh_node.matrix
+    pyrender_scene.set_pose(mesh_node, pose=new_pose)
+
+    # Define your scale factor (e.g., 0.5 will make the object half as large)
+    # scale_factor = 0.5
+    # Create a 4x4 scaling matrix
+    scale_matrix = np.array([
+        [object_scale_factor, 0,             0,             0],
+        [0,            object_scale_factor,  0,             0],
+        [0,            0,             object_scale_factor,  0],
+        [0,            0,             0,             1]
+    ])
+    # Apply the scaling to the current transformation of the mesh node.
+    # If the object is centered at its origin, this will uniformly scale it.
+    new_pose = scale_matrix @ mesh_node.matrix
+    pyrender_scene.set_pose(mesh_node, pose=new_pose)
+    # ====
+
+    # 3. Create a matching PyRender camera
+    # Trimesh stores FOV in degrees as [fov_x, fov_y], and PyRender's PerspectiveCamera
+    # expects yfov in RADIANS. We'll assume fov_y is the vertical FOV.
+    fov_y_degrees = trimesh_camera.fov[1]
+    yfov_radians = np.radians(fov_y_degrees)
+
+    # Create the PyRender camera with that vertical FOV
+    camera = pyrender.PerspectiveCamera(yfov=yfov_radians)
+
+    # 4. Add the camera to the PyRender scene at the same transform
+    # Note: scene.camera_transform is a 4x4 matrix in world coordinates
+    camera_node = pyrender_scene.add(camera, pose=trimesh_camera_transform)
+
+    # ===
+
+    # How far to move the camera (adjust this value as needed)
+    offset = 0.1
+    # Create a translation matrix that moves along the local z-axis.
+    # Multiplying on the right applies the translation in the camera's local coordinate system.
+    translation = np.eye(4)
+    translation[2, 3] = offset  # Move along local z
+    # Compute the new camera transform by applying the translation.
+    new_camera_transform = trimesh_camera_transform @ translation
+    # Update the camera node's pose.
+    pyrender_scene.set_pose(camera_node, pose=new_camera_transform)
+
+    # ===
+
+    # 5. Add a light so the object is visible
+    light = pyrender.DirectionalLight(color=np.ones(3), intensity=3.0)
+    pyrender_scene.add(light, pose=trimesh_camera_transform)
+
+    # 6. Use the same resolution for the offscreen renderer if you want a 1:1 match
+    width, height = trimesh_camera.resolution
+    renderer = pyrender.OffscreenRenderer(viewport_width=width, viewport_height=height)
+
+    # 7. Render
+    color, depth = renderer.render(pyrender_scene)
+    renderer.delete()
+
+    # 8. Save or display the resulting image
+    # Image.fromarray(color).save('rendered_image.png')
+    # plt.imshow(Image.fromarray(color))
+    # plt.show()
+
+    # ====================
+
+    # Convert the rendered image to a PIL Image with an alpha channel
+    rendered_img = Image.fromarray(color).convert("RGBA")
+
+    # Optional: Make a simple white-to-transparent conversion
+    # Adjust the threshold (here 240) depending on your render background color
+    pixels = rendered_img.getdata()
+    new_pixels = []
+    for pixel in pixels:
+        # if pixel is nearly white, set alpha to 0 (transparent)
+        if pixel[0] > 240 and pixel[1] > 240 and pixel[2] > 240:
+            new_pixels.append((255, 255, 255, 0))
+        else:
+            new_pixels.append(pixel)
+    rendered_img.putdata(new_pixels)
+
+    # ====================
+    # ====================
+
+    # Extract the alpha channel from the rendered image
+    alpha = rendered_img.split()[3]
+    # Get the bounding box of all non-zero (non-transparent) pixels
+    bbox = alpha.getbbox()
+    if bbox:
+        # Crop the image to the bounding box
+        cropped_img = rendered_img.crop(bbox)
+        # plt.imshow(cropped_img)
+        # plt.show()
+
+    return cropped_img
+        
+ 
 
 def main():
 
@@ -169,10 +317,35 @@ def main():
 
     if not os.path.exists(f"results_qwen_72B_img_categories/all_meta_categories_locations_v4.json"):
 
+        folder_path = "hot3d_dataset/object_models"
+        files = glob.glob(folder_path + "/*.glb")
+        
+        files.sort()
+        files[0]
+        
+        all_3d_objects = {}
+        
+        for ii in range (len(files)):
+            info = {}
+            if ii < len(files) - 1:
+                info['rendered_image'] = inpaint_3d_object(files[ii], object_scale_factor = 0.5, x_rotation = 55, y_rotation = 210)
+                info['object_scale_factor'] = 0.5
+                info['x_rotation'] = 55
+                info['y_rotation'] = 210
+            else: # last object is weird //  a black control
+                info['rendered_image'] = inpaint_3d_object(files[ii], object_scale_factor = 0.5, x_rotation = 0, y_rotation = 330)
+                info['object_scale_factor'] = 0.5
+                info['x_rotation'] = 0
+                info['y_rotation'] = 330
+            all_3d_objects[files[ii]] = info
+        
+        with open('results_qwen_72B_img_categories/3d_objects.pkl', 'wb') as file:
+            pickle.dump(all_3d_objects, file)
+        
         with open('results_qwen_72B_img_categories/all_meta_categories_locations_v3.json', 'r') as file:
             data = json.load(file)
 
-        with open('/gpfs/projects/CascanteBonillaGroup/paola/Qwen2.5-VL/results_qwen_72B_img_categories/3d_objects.pkl', 'rb') as file:
+        with open('results_qwen_72B_img_categories/3d_objects.pkl', 'rb') as file:
             all_3d_objects = pickle.load(file)
 
         

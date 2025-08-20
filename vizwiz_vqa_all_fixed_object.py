@@ -35,10 +35,10 @@ def main():
     with open('results_qwen_72B_img_categories/all_meta_categories_locations_v4.json', 'r') as file:
         data = json.load(file)
 
-    with open('/gpfs/projects/CascanteBonillaGroup/paola/Qwen2.5-VL/results_qwen_72B_img_categories/3d_objects.pkl', 'rb') as file:
+    with open('results_qwen_72B_img_categories/3d_objects.pkl', 'rb') as file:
         all_3d_objects = pickle.load(file)
 
-    with open('/gpfs/projects/CascanteBonillaGroup/paola/Qwen2.5-VL/results_qwen_72B_img_categories/3dobjects_properties.json', 'r') as file:
+    with open('hot3d_dataset/object_models/models_info.json', 'r') as file:
         all_3d_objects_names = json.load(file)          
 
     meta_categories = [
@@ -219,13 +219,12 @@ def main():
 
     for ii, (img_path, anns) in tqdm(enumerate(data.items())):
 
-        print(ii)
 
         if anns['full_image_mask'] != 'None': # and anns['high_risk_fine_grained_masked_private_obj'] != 'None':
-           
+
             # fix object to mouse
             object_number = object_name_to_id[args.control_object] # 31 # extract_number(anns['object_path'])
-            object_path = f'/gpfs/projects/CascanteBonillaGroup/anaconda3/.cache/hub/datasets--bop-benchmark--hot3d/snapshots/02cd608cf5a86e291e87869887280854a1966c0b/object_models/obj_0000{object_number}.glb'
+            object_path = f'hot3d_dataset/object_models/obj_0000{object_number}.glb'
             object_name = all_3d_objects_names[str(int(object_number))]['name']
             obj = all_3d_objects[object_path]['rendered_image'] # all_3d_objects[anns['object_path']]['rendered_image']
             
