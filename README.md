@@ -8,7 +8,7 @@ Jeffri Murrugarra-Llerena<sup>1</sup>, Haoran Niu<sup>2</sup>, K. Suzanne Barber
 
 </div>
 
-[[`Paper`]()] [[`Project`](https://artcs1.github.io/VLMPrivacy/)] [[`BibTeX`](#citation)]
+[[`Paper`](https://arxiv.org/pdf/2508.09245v1)] [[`Project`](https://artcs1.github.io/VLMPrivacy/)] [[`BibTeX`](#citation)]
 
 ## About
 
@@ -53,6 +53,8 @@ We show how to utilize our agents and their interactions in demo.ipynb
 Download the **BIVPRIVSEG** dataset here: https://vizwiz.org/tasks-and-datasets/object-localization/. Put all images in a folder named 'all_images' and modify config.py with that path.
 
 ## Code for validation experiments
+
+We use four A100
 
 1. Compute detections
 ```
