@@ -102,3 +102,13 @@ If you use this model in your research, please consider citing:
   year      = {2025},
 }
 ```
+
+## 📌 TODO
+
+### ✅ Done
+- Release full code
+- Relase demo and reproductible code=
+
+### 🛠️ In Progress
+- **TODO**: Provide a deploy with gradio
+- **TODO**: Create a docker to simplify the installation
