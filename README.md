@@ -106,8 +106,8 @@ If you use this model in your research, please consider citing:
 ## 📌 TODO
 
 ### ✅ Done
-- Release full code
-- Relase demo and reproductible code=
+- Release full code (with paper experiments)
+- Relase demo in notebook
 
 ### 🛠️ In Progress
 - **TODO**: Provide a deploy with gradio
