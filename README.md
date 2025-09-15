@@ -54,7 +54,7 @@ Download the **BIVPRIVSEG** dataset here: https://vizwiz.org/tasks-and-datasets/
 
 ## Code for validation experiments
 
-We use four A100 with 80GB of VRAM
+We use 4 A100 with 80GB of VRAM
 
 1. Compute detections
 ```
