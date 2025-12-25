@@ -28,7 +28,7 @@ conda activate py10-vlm
 
 ```
 pip install torch==2.5.1 transformers==4.51.3 accelerate
-pip install -U flash-attn==2.7.4.post1 --no-build-isolation
+pip install -U flash-attn==2.7.4.post1 --no-cache-dir --no-build-isolation
 pip install qwen-vl-utils[decord]
 python -m pip install paddlepaddle==3.0.0rc1 -i https://www.paddlepaddle.org.cn/packages/stable/cpu/
 ```
