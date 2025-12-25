@@ -52,6 +52,10 @@ We show how to utilize our agents and their interactions in demo.ipynb
 
 Download the **BIVPRIVSEG** dataset here: https://vizwiz.org/tasks-and-datasets/object-localization/. Put all images in a folder named 'all_images' and modify config.py with that path.
 
+```
+bash download_bivprig.sh
+```
+
 ## Code for validation experiments
 
 We use 4 A100 with 80GB of VRAM
