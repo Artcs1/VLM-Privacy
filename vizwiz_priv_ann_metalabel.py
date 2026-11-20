@@ -109,8 +109,13 @@ for folder_path in paths:
             
         
             # break
-        except:
-            problematic_files.append(ff)
+        except Exception as e:
+            # Images that land here get no fine-grained labels, so the eval has no high-risk mask for them.
+            problematic_files.append({"file": ff, "error": repr(e)})
             # break
-    
+
+    print(f"{folder_path}: {len(problematic_files)} of {len(files)} files failed labeling")
+    with open(f"results_qwen_72B_img_categories/{os.path.basename(folder_path)}_problematic_files.json", "w") as fp:
+        json.dump(problematic_files, fp, indent=4)
+
     

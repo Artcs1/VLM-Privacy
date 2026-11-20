@@ -475,11 +475,26 @@ class QWEN_VLM:
         return generated_text
     
 
+    # The detector picks its category from a list with typos, and label2item_list.json has its own.
+    METACATEGORY_ALIASES = {
+        "preganancy test": "pregnancy test",
+        "pregunancy test": "pregnancy test",
+        "mortgage or investment report": "mortage or investment report",
+    }
+
+    def canonical_metacategory(self, metacategory):
+        """Map the detector's free-text category to a key of label2item_list.json, or raise KeyError."""
+        key = metacategory.strip().strip('."\'').lower()
+        key = self.METACATEGORY_ALIASES.get(key, key)
+        if key not in self.unique_categories_per_metacategory:
+            raise KeyError(f"no PII list for meta-category {metacategory!r}")
+        return key
+
     def guided_labeling_per_match_per_metacategory(self, image, strs, metacategory):
-    
-        unique_categories = self.unique_categories_per_metacategory[metacategory]["contained_info"]
-        unique_categories.append("other")
-        unique_categories.append("none")
+
+        # Copy: appending to the shared list made the prompt grow by two entries on every call.
+        key = self.canonical_metacategory(metacategory)
+        unique_categories = list(self.unique_categories_per_metacategory[key]["contained_info"]) + ["other", "none"]
 
         messages = [
             {"role": "system", "content": """You are a helpful assistant."""},

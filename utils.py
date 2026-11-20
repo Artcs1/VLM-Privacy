@@ -85,7 +85,22 @@ def gemma3():
     processor = AutoProcessor.from_pretrained(ckpt)
     return model, processor
 
-def vqa_yes_prob(model_7b, processor_7b, image, question_prompt, model="qwen25", device="cuda"):
+def yes_no_prompt(question_prompt):
+    """Append the yes/no instruction with exactly one question mark."""
+    q = question_prompt.rstrip()
+    if not q.endswith("?"):
+        q += "?"
+    return f"{q} Answer yes or no."
+
+
+def vqa_yes_prob(model_7b, processor_7b, image, question_prompt, model="qwen25", device="cuda", legacy_qmark=False):
+
+    if legacy_qmark:
+        # Paper behavior: Qwen and LLaVA appended "?" to prompts that already ended in "?".
+        sep = "?" if model in ("qwen25", "llava16") else ""
+        text_prompt = f"{question_prompt}{sep} Answer yes or no."
+    else:
+        text_prompt = yes_no_prompt(question_prompt)
 
     if model == "qwen25":
         messages = [
@@ -98,7 +113,7 @@ def vqa_yes_prob(model_7b, processor_7b, image, question_prompt, model="qwen25",
                         "min_pixels": 224 * 224,
                         # "max_pixels": 1280 * 28 * 28,
                     },
-                {"type": "text", "text": f"{question_prompt}? Answer yes or no."},
+                {"type": "text", "text": text_prompt},
             ],
             }
         ]
@@ -164,7 +179,7 @@ def vqa_yes_prob(model_7b, processor_7b, image, question_prompt, model="qwen25",
                 {
                     "role": "user",
                     "content": [
-                        {"type": "text", "text": f"{question_prompt}? Answer yes or no."},
+                        {"type": "text", "text": text_prompt},
                         {"type": "image"},
                     ],
                 },
@@ -204,7 +219,7 @@ def vqa_yes_prob(model_7b, processor_7b, image, question_prompt, model="qwen25",
                 "role": "user",
                 "content": [
                     {"type": "image", "image": image},
-                    {"type": "text", "text": f"{question_prompt} Answer yes or no."}
+                    {"type": "text", "text": text_prompt}
                 ]
             }
         ]
