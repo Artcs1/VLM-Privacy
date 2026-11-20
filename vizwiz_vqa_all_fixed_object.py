@@ -27,10 +27,22 @@ def main():
                         choices=['mouse', 'wooden spoon', 'puzzle toy', 'red spatula', 'dino toy', 'milk carton', 'keyboard', 'dumbbell', 'remote control', 'whiteboard marker'])
     parser.add_argument('-m', '--model', type=str, help='Model to use', default='qwen25', 
                         choices=['qwen25', 'llava16', 'gemma3'])
+    # Each name turns one fix off, to reproduce the paper's numbers and measure each fix on its own.
+    LEGACY_CHOICES = ['answerability_prompt', 'double_qmark', 'stale_high_risk', 'raw_label_match']
+    parser.add_argument('--legacy', nargs='*', default=[], choices=LEGACY_CHOICES + ['all'],
+                        help='Reproduce paper behavior for these fixes ("all" = the paper exactly)')
     args = parser.parse_args()
+    legacy = set(LEGACY_CHOICES) if 'all' in args.legacy else set(args.legacy)
+    legacy_qmark = 'double_qmark' in legacy
 
-    if not os.path.exists(f"results_{args.model}_7B_img_categories_v2"):
-        os.makedirs(f"results_{args.model}_7B_img_categories_v2")
+    # Paper settings keep the original output dir; anything else gets its own, so runs never overwrite each other.
+    out_dir = f"results_{args.model}_7B_img_categories_v2"
+    if legacy != set(LEGACY_CHOICES):
+        out_dir += "_fixed" if not legacy else "_legacy-" + "-".join(sorted(legacy))
+    print(f"legacy={sorted(legacy)} out_dir={out_dir}")
+
+    if not os.path.exists(out_dir):
+        os.makedirs(out_dir)
 
     with open('results_qwen_72B_img_categories/all_meta_categories_locations_v4.json', 'r') as file:
         data = json.load(file)
@@ -209,16 +221,35 @@ def main():
         
         for q in answerable_questions[anns['label']]:
             answerable = f"Given this question: '{q}', based on the image, are you able to answer the question?"
-            answerable_score = vqa_yes_prob(model, processor, image_to_ask, f"Is there a {answerable} in this image?", model=args.model)
+            if 'answerability_prompt' in legacy:
+                # Paper behavior: the question got wrapped a second time, as if it were an object name.
+                prompt = f"Is there a {answerable} in this image?"
+            else:
+                prompt = answerable
+            answerable_score = vqa_yes_prob(model, processor, image_to_ask, prompt, model=args.model, legacy_qmark=legacy_qmark)
             answerable_qas.append([answerable, answerable_score])
         return answerable_qas
 
+    def is_high_risk(label):
+        if 'raw_label_match' in legacy:
+            return label not in ['none', 'other']
+        # The labeler returns free text ("Other.", "None"). Anything still unrecognized stays masked.
+        return label.strip().strip('."\'').lower() not in ['none', 'other']
+
     print(len(data))
 
-    
+    high_risk_fine_grained_masked = None
+    n_stale_reuse = 0   # images scored on the previous image's high-risk mask (legacy behavior only)
+    n_no_high_risk = 0  # images with no high-risk mask, recorded as 'None'
+
 
     for ii, (img_path, anns) in tqdm(enumerate(data.items())):
 
+
+        if 'stale_high_risk' not in legacy:
+            # Paper behavior never reset this, so an image with no labeled spans reused the previous image's mask.
+            high_risk_fine_grained_masked = None
+        made_high_risk_this_image = False
 
         if anns['full_image_mask'] != 'None': # and anns['high_risk_fine_grained_masked_private_obj'] != 'None':
 
@@ -287,11 +318,12 @@ def main():
             if data_finegrained_categories and data_finegrained['original_detailed_data'][0]['data_vlm'][0]:
                 
                 high_risk_fine_grained_masked = Image.open(img_path)
+                made_high_risk_this_image = True
                 draw_high_risk = ImageDraw.Draw(high_risk_fine_grained_masked)
 
                 for ii_text, text in enumerate(data_finegrained['original_detailed_data'][0]['data_vlm'][1]):
-                    
-                    if data_finegrained_categories[text] not in ['none', 'other']:
+
+                    if is_high_risk(data_finegrained_categories[text]):
                         poly = data_finegrained['original_detailed_data'][0]['data_vlm'][0][ii_text]
                         points = [(int(round(x)), int(round(y))) for x, y in poly]
                         draw_high_risk.polygon(points, fill="black")
@@ -324,8 +356,8 @@ def main():
  #
 
 
-            full_image_private_obj = vqa_yes_prob(model, processor, full_image, f"Is there a {anns['label']} in this image?", model=args.model)
-            full_image_non_private_obj = vqa_yes_prob(model, processor, full_image, f"Is there a {object_name} in this image?", model=args.model)
+            full_image_private_obj = vqa_yes_prob(model, processor, full_image, f"Is there a {anns['label']} in this image?", model=args.model, legacy_qmark=legacy_qmark)
+            full_image_non_private_obj = vqa_yes_prob(model, processor, full_image, f"Is there a {object_name} in this image?", model=args.model, legacy_qmark=legacy_qmark)
 
             anns['full_image_private_obj'] = full_image_private_obj
             anns['full_image_non_private_obj'] = full_image_non_private_obj
@@ -333,16 +365,16 @@ def main():
             answerable_qas = ask_extra_answerable_questions(full_image, anns)
             anns['full_image_answerable_qas'] = answerable_qas
 
-            masked_full_image_private_obj = vqa_yes_prob(model, processor, masked_full_image, f"Is there a {anns['label']} in this image?", model=args.model)
-            masked_full_image_non_private_obj = vqa_yes_prob(model, processor, masked_full_image, f"Is there a {object_name} in this image?", model=args.model)
+            masked_full_image_private_obj = vqa_yes_prob(model, processor, masked_full_image, f"Is there a {anns['label']} in this image?", model=args.model, legacy_qmark=legacy_qmark)
+            masked_full_image_non_private_obj = vqa_yes_prob(model, processor, masked_full_image, f"Is there a {object_name} in this image?", model=args.model, legacy_qmark=legacy_qmark)
             anns['masked_full_image_private_obj'] = masked_full_image_private_obj
             anns['masked_full_image_non_private_obj'] = masked_full_image_non_private_obj
             # print (masked_full_image_private_obj, '-', masked_full_image_non_private_obj)
             answerable_qas = ask_extra_answerable_questions(masked_full_image, anns)
             anns['masked_full_image_answerable_qas'] = answerable_qas
 
-            all_fine_grained_masked_private_obj = vqa_yes_prob(model, processor, all_fine_grained_masked, f"Is there a {anns['label']} in this image?", model=args.model)
-            all_fine_grained_masked_non_private_obj = vqa_yes_prob(model, processor, all_fine_grained_masked, f"Is there a {object_name} in this image?", model=args.model)
+            all_fine_grained_masked_private_obj = vqa_yes_prob(model, processor, all_fine_grained_masked, f"Is there a {anns['label']} in this image?", model=args.model, legacy_qmark=legacy_qmark)
+            all_fine_grained_masked_non_private_obj = vqa_yes_prob(model, processor, all_fine_grained_masked, f"Is there a {object_name} in this image?", model=args.model, legacy_qmark=legacy_qmark)
             anns['all_fine_grained_masked_private_obj'] = all_fine_grained_masked_private_obj
             anns['all_fine_grained_masked_non_private_obj'] = all_fine_grained_masked_non_private_obj
             # print (all_fine_grained_masked_private_obj, '-', all_fine_grained_masked_non_private_obj)
@@ -352,13 +384,16 @@ def main():
             # breakpoint()
             # plt.imshow(high_risk_fine_grained_masked)
             # plt.show()
-            if high_risk_fine_grained_masked:
+            if high_risk_fine_grained_masked is not None:
+                if not made_high_risk_this_image:
+                    n_stale_reuse += 1
+                    anns['high_risk_mask_from_previous_image'] = True
                 plt.imshow(high_risk_fine_grained_masked)
                 # plt.show()
                 plt.savefig("high_risk.png")
  
-                high_risk_fine_grained_masked_private_obj = vqa_yes_prob(model, processor, high_risk_fine_grained_masked, f"Is there a {anns['label']} in this image?", model=args.model)
-                high_risk_fine_grained_masked_non_private_obj = vqa_yes_prob(model, processor, high_risk_fine_grained_masked, f"Is there a {object_name} in this image?", model=args.model)
+                high_risk_fine_grained_masked_private_obj = vqa_yes_prob(model, processor, high_risk_fine_grained_masked, f"Is there a {anns['label']} in this image?", model=args.model, legacy_qmark=legacy_qmark)
+                high_risk_fine_grained_masked_non_private_obj = vqa_yes_prob(model, processor, high_risk_fine_grained_masked, f"Is there a {object_name} in this image?", model=args.model, legacy_qmark=legacy_qmark)
                 anns['high_risk_fine_grained_masked_private_obj'] = high_risk_fine_grained_masked_private_obj
                 anns['high_risk_fine_grained_masked_non_private_obj'] = high_risk_fine_grained_masked_non_private_obj
                 # print (high_risk_fine_grained_masked_private_obj, '-', high_risk_fine_grained_masked_non_private_obj)
@@ -366,6 +401,7 @@ def main():
                 anns['high_risk_fine_grained_masked_answerable_qas'] = answerable_qas
             else:
                 # files_with_no_fine_grained.append([ii, img_path])
+                n_no_high_risk += 1
                 anns['high_risk_fine_grained_masked_private_obj'] = 'None'
                 anns['high_risk_fine_grained_masked_non_private_obj'] = 'None'
                 anns['high_risk_fine_grained_masked_answerable_qas'] = 'None'
@@ -380,11 +416,12 @@ def main():
         # break
         if ii % 100 == 0:
             filename = f"all_meta_categories_vqa_results_fixed_object_{args.control_object}.json"
-            with open(f"results_{args.model}_7B_img_categories_v2/{filename}", "w") as fp:
+            with open(f"{out_dir}/{filename}", "w") as fp:
                 json.dump(data, fp, indent=4, cls=NumpyEncoder)
 
+    print(f"high-risk mask reused from previous image: {n_stale_reuse}; no high-risk mask: {n_no_high_risk}")
     filename = f"all_meta_categories_vqa_results_fixed_object_{args.control_object}.json"
-    with open(f"results_{args.model}_7B_img_categories_v2/{filename}", "w") as fp:
+    with open(f"{out_dir}/{filename}", "w") as fp:
         json.dump(data, fp, indent=4, cls=NumpyEncoder)
         
 if __name__ == "__main__":
